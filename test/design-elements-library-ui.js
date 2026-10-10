@@ -1,0 +1,60 @@
+import assert from 'node:assert/strict';
+import {createServer as createHTTPServer} from 'node:http';
+import {mkdtemp,rm,mkdir} from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {chromium} from 'playwright';
+import {createCanvas} from '@napi-rs/canvas';
+import JSZip from 'jszip';
+import {createServer} from '../backend/http/server.js';
+
+const root=fileURLToPath(new URL('..',import.meta.url)),dataDir=await mkdtemp(path.join(os.tmpdir(),'presentation-elements-ui-'));
+const application=await createServer(root,{authRequired:false,dataDir}),browser=await chromium.launch({headless:true,...(process.env.PRESENTATION_BROWSER_PATH?{executablePath:process.env.PRESENTATION_BROWSER_PATH}:{})}),page=await browser.newPage({viewport:{width:1660,height:1000}});
+const errors=[],providerErrors=[],providerCalls=[];page.on('pageerror',error=>errors.push(error.message));
+const original=await application.library.create({title:'Element source fixture',themeId:'paper'});
+const imageCanvas=createCanvas(128,80),draw=imageCanvas.getContext('2d');draw.fillStyle='#f47e52';draw.fillRect(0,0,128,80);draw.fillStyle='#13223d';draw.fillRect(20,18,60,42);const image=imageCanvas.encodeSync('png');
+let failNext=true,phase=0,elementId,attachmentId;
+const provider=createHTTPServer(async(req,res)=>{
+  try{
+    let raw='';for await(const chunk of req)raw+=chunk;const input=JSON.parse(raw),messages=input.messages;
+    if(failNext){failNext=false;res.writeHead(400,{'Content-Type':'application/json'});res.end(JSON.stringify({error:{message:'Fixture provider unavailable; retry the same draft.'}}));return;}
+    res.writeHead(200,{'Content-Type':'text/event-stream'});const send=delta=>res.write('data: '+JSON.stringify({id:'element-fixture',choices:[{index:0,delta,finish_reason:null}]})+'\n\n');
+    const call=items=>{providerCalls.push(...items.map(item=>item[0]));send({tool_calls:items.map(([name,args],index)=>({index,id:name+'-'+phase,type:'function',function:{name,arguments:JSON.stringify(args)}}))});};
+    const outputs=messages.filter(item=>item.role==='tool'),value=name=>JSON.parse(outputs.findLast(item=>item.tool_call_id.startsWith(name+'-')).content);
+    for(const result of outputs)assert.equal(JSON.parse(result.content).error,undefined);
+    if(phase===0){const user=messages.filter(item=>item.role==='user').at(-1),text=typeof user.content==='string'?user.content:user.content.find(item=>item.type==='text').text;attachmentId=/Attachment ([a-f0-9-]{36}):/.exec(text)[1];assert(messages.some(item=>Array.isArray(item.content)&&item.content.some(block=>block.type==='image_url')));assert.match(text,/create_design_element/);assert(!text.includes('Unsent editorial idea'));assert(!text.includes('unsent-main-chat.md'));call([['read_attachment',{attachmentId}],['use_attachment_image',{attachmentId}]]);
+    }else if(phase===1){const asset=value('use_attachment_image');assert(asset.url.startsWith('/api/projects/'+original.id+'/assets/'));call([['create_design_element',{name:'Библиотечный элемент',description:'Авторская рамка с изображением.',width:360,height:200,body:`<div style="position:absolute;width:360px;height:200px;border:3px solid #f47e52;border-radius:20px;background:#13223d"><img data-block-type="image" alt="Фрагмент образца" src="${asset.url}" style="position:absolute;left:24px;top:20px;width:128px;height:80px"><p data-block-type="text" style="position:absolute;left:24px;top:125px;width:304px;height:40px;margin:0;color:#f4f0e7;font:24px/1.2 Arial">Библиотечный элемент</p></div>`}]]);
+    }else if(phase===2){elementId=value('create_design_element').id;assert(elementId);call([['render_design_element',{elementId}]]);
+    }else{assert(value('render_design_element').preview.imageProvided);assert(messages.some(item=>Array.isArray(item.content)&&item.content.some(block=>block.type==='image_url')));send({content:'Элемент создан и сохранён в библиотеке. Изображение проверено.'});}
+    phase++;res.end('data: [DONE]\n\n');
+  }catch(error){providerErrors.push(error.message);if(!res.headersSent)res.writeHead(400,{'Content-Type':'application/json'});res.end(JSON.stringify({error:{message:error.message}}));}
+});await new Promise(resolve=>provider.listen(0,'127.0.0.1',resolve));
+await application.ai.saveSettings({provider:'openai',apiMode:'chat-completions',baseUrl:'http://127.0.0.1:'+provider.address().port+'/v1',model:'element-ui-fixture',apiKey:'fixture-key-not-secret'});
+const settle=async()=>{await page.waitForFunction(()=>document.getElementById('save-status').textContent==='Сохранено');};
+const openElements=async()=>{await page.locator('#elements-tool').click();await page.locator('#elements-catalog').waitFor({state:'visible'});await page.locator('#elements-catalog .element-choice').first().waitFor();};
+async function drag(id,x,y){
+  const tile=page.locator('#elements-catalog .element-choice[data-element-id="'+id+'"]');await tile.scrollIntoViewIfNeeded();const from=await tile.boundingBox(),frame=await page.locator('#slide-canvas').boundingBox();
+  await page.mouse.move(from.x+from.width/2,from.y+from.height/2);await page.mouse.down();await page.mouse.move(frame.x+x*frame.width/1280,frame.y+y*frame.height/720,{steps:12});await page.mouse.up();
+}
+try{
+  await page.goto(application.url+'/projects/'+original.id);await page.locator('#canvas-loading').waitFor({state:'hidden'});await openElements();assert.equal(await page.locator('#elements-dialog').count(),0);assert.equal(await page.locator('#elements-catalog .element-choice').count(),16);
+  const before=await application.library.get(original.id);await drag('arrow-right',720,260);await page.frameLocator('#slide-canvas').locator('[data-element-id="arrow-right"]').waitFor();await settle();
+  let saved=await application.library.get(original.id);assert.equal(saved.slides[0].version,before.slides[0].version+1);assert.equal(await page.frameLocator('#slide-canvas').locator('[data-element-id="arrow-right"]').count(),1);
+  const arrow=await page.frameLocator('#slide-canvas').locator('[data-element-id="arrow-right"]').evaluate(element=>({left:parseFloat(element.style.left),top:parseFloat(element.style.top)}));assert.deepEqual(arrow,{left:580,top:224});
+  await page.locator('#chat-input').fill('Unsent editorial idea');await page.locator('#chat-file-input').setInputFiles({name:'unsent-main-chat.md',mimeType:'text/markdown',buffer:Buffer.from('Keep this draft outside the element request.')});await page.locator('#chat-attachments .attachment-chip.ready').waitFor();
+  await page.locator('#element-create-open').click();await page.locator('#element-create-prompt').fill('Сделай рамку с картинкой и подписью по образцу.');await page.locator('#element-create-files').setInputFiles({name:'element-reference.png',mimeType:'image/png',buffer:image});await page.locator('#element-create-attachments .attachment-chip.ready').waitFor();
+  await page.locator('#element-create-submit').click();await page.locator('#element-create-dialog[open] #element-create-status.error').waitFor({timeout:30000});assert.equal(await page.locator('#element-create-prompt').inputValue(),'Сделай рамку с картинкой и подписью по образцу.');assert.equal(await page.locator('#element-create-attachments .attachment-chip.ready').count(),1);assert.equal(await page.locator('#chat-input').inputValue(),'Unsent editorial idea');assert.equal(await page.locator('#chat-attachments .attachment-chip.ready').count(),1);
+  const creationSlideBefore=(await application.library.get(original.id)).slides[0].body;await page.locator('#element-create-submit').click();await page.locator('#element-create-dialog').waitFor({state:'hidden'});await page.locator('#elements-catalog .element-choice').filter({hasText:'Библиотечный элемент'}).waitFor({timeout:30000});assert.deepEqual(providerErrors,[]);assert(elementId);assert(providerCalls.includes('create_design_element'));assert(providerCalls.includes('render_design_element'));assert.equal(await page.locator('#chat-input').inputValue(),'Unsent editorial idea');assert.equal(await page.locator('#chat-attachments .attachment-chip.ready').count(),1);assert.equal((await application.library.get(original.id)).slides[0].body,creationSlideBefore,'Creation saves a library item without changing the slide');
+  const record=await application.library.elements.get(elementId);assert(record.body.includes('/api/elements/'+elementId+'/assets/'));assert(!record.body.includes('/api/projects/'+original.id+'/assets/'));assert(!record.body.includes('/attachments/'));assert.equal(record.width,360);assert.equal(record.height,200);
+  await drag(elementId,860,390);await page.frameLocator('#slide-canvas').locator('[data-element-id="'+elementId+'"]').waitFor();await settle();const element=page.frameLocator('#slide-canvas').locator('[data-element-id="'+elementId+'"]');assert.deepEqual(await element.evaluate(node=>({left:parseFloat(node.style.left),top:parseFloat(node.style.top)})),{left:680,top:290});await page.waitForFunction(id=>{const image=document.getElementById('slide-canvas').contentDocument.querySelector('[data-element-id=\"'+id+'\"] img');return image?.complete&&image.naturalWidth===128;},elementId);
+  saved=await application.library.get(original.id);assert(saved.slides[0].body.includes('/api/projects/'+original.id+'/assets/'));assert(!saved.slides[0].body.includes('/api/elements/'));await page.reload();await page.locator('#canvas-loading').waitFor({state:'hidden'});assert.equal(await page.frameLocator('#slide-canvas').locator('[data-element-id="'+elementId+'"]').count(),1);
+  const second=await application.library.create({title:'Element reuse fixture',themeId:'light'});await application.ai.deleteContext(original.id,'project',{version:(await application.library.get(original.id)).version});await page.goto(application.url+'/projects/'+second.id);await page.locator('#canvas-loading').waitFor({state:'hidden'});await openElements();
+  assert.equal(await page.locator('#elements-catalog .element-new').count(),0,'Initial catalogue load must not highlight existing custom elements');assert.equal(await page.locator('#elements-content').evaluate(node=>node.scrollTop),0,'Initial catalogue load must remain at the beginning');
+  await page.locator('#elements-catalog .element-choice[data-element-id="'+elementId+'"]').click();await page.frameLocator('#slide-canvas').locator('[data-element-id="'+elementId+'"] img').waitFor();await settle();await page.waitForFunction(id=>{const image=document.getElementById('slide-canvas').contentDocument.querySelector('[data-element-id=\"'+id+'\"] img');return image?.complete&&image.naturalWidth===128;},elementId);
+  const reused=await application.library.get(second.id);assert(reused.slides[0].body.includes('/api/projects/'+second.id+'/assets/'));assert(!reused.slides[0].body.includes(original.id));assert.deepEqual(await application.library.elements.asset(elementId,/\/api\/elements\/[^/]+\/assets\/([^" ]+)/.exec(record.body)[1]),image);
+  const exportResponse=await fetch(application.url+'/api/projects/'+second.id+'/export/pptx',{method:'POST'});assert(exportResponse.ok);const exported=await JSZip.loadAsync(Buffer.from(await exportResponse.arrayBuffer()));assert.match(await exported.file('ppt/slides/slide1.xml').async('string'),/Библиотечный элемент/);
+  assert.deepEqual(errors,[]);await mkdir(path.join(root,'test-results'),{recursive:true});await page.screenshot({path:path.join(root,'test-results','design-elements-library.png')});console.log('Design element library UI passed: right panel, precise cross-frame drag, provider-error draft retention, image-backed AI catalog creation, repeatable insertion, independent asset copies after source deletion, reload and editable PPTX text.');
+}finally{
+  await browser.close();provider.closeAllConnections();await new Promise(resolve=>provider.close(resolve));await application.ai.close();application.server.closeAllConnections();await new Promise(resolve=>application.server.close(resolve));await rm(dataDir,{recursive:true,force:true,maxRetries:5});
+}

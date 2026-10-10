@@ -1,0 +1,32 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtemp,rm,readFile} from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import {createServer,projectRoot} from '../backend/http/server.js';
+import {AuthStore} from '../backend/modules/auth/service.js';
+
+test('owner login protects projects, rejects CSRF, persists session and revokes logout',async t=>{
+  const dataDir=await mkdtemp(path.join(os.tmpdir(),'studio-auth-')),file=path.join(dataDir,'auth.sqlite');
+  const auth=new AuthStore(file);await auth.setUser('owner','ExampleOnly-TestPassword-123456');auth.close();
+  const origin='https://presentations.example.test';let app=await createServer(projectRoot,{dataDir,authRequired:true,publicOrigin:origin,authFile:file});
+  t.after(async()=>{await new Promise(r=>app.server.close(r));await rm(dataDir,{recursive:true,force:true});});
+  let cookie;const request=(url,method='GET',data,headers={})=>fetch(app.url+url,{method,redirect:'manual',headers:{Origin:origin,...(cookie?{Cookie:cookie}:{}),...(data?{'Content-Type':'application/json'}:{}),...headers},body:data?JSON.stringify(data):undefined});
+  assert.equal((await request('/')).status,303);assert.equal((await request('/api/projects')).status,401);assert.equal((await request('/login')).status,200);
+  assert.equal((await request('/api/login','POST',{username:'owner',password:'wrong'})).status,401);
+  assert.equal((await request('/api/login','POST',{username:'owner',password:'ExampleOnly-TestPassword-123456'},{Origin:'https://elsewhere.test'})).status,403);
+  const response=await request('/api/login','POST',{username:'owner',password:'ExampleOnly-TestPassword-123456'});assert.equal(response.status,200);cookie=response.headers.get('set-cookie');assert(cookie.includes('HttpOnly'));assert(cookie.includes('Secure'));assert(cookie.includes('SameSite=Lax'));cookie=cookie.split(';')[0];
+  const project=await(await request('/api/projects','POST',{title:'Example'})).json();assert(project.id);
+  assert.equal((await request('/api/projects','POST',{title:'bad'},{Origin:''})).status,403);
+  const token=(await(await request('/api/projects/'+project.id+'/share','POST',{})).json()).token;
+  const slide=project.slides[0];await request('/api/projects/'+project.id+'/notes','PATCH',{changes:[{id:slide.id,version:0,notes:'PRIVATE SPEAKER NOTES'}]});
+  const publicHTML=await(await fetch(app.url+'/s/'+token)).text();assert(!publicHTML.includes('PRIVATE SPEAKER NOTES'));assert(publicHTML.includes('readonly'));
+  assert.equal((await fetch(app.url+'/api/projects/'+project.id)).status,401);
+  await new Promise(r=>app.server.close(r));app=await createServer(projectRoot,{dataDir,authRequired:true,publicOrigin:origin,authFile:file});
+  assert.equal((await(await request('/api/projects/'+project.id)).json()).slides[0].notes,'PRIVATE SPEAKER NOTES');
+  await request('/api/projects/'+project.id+'/share','DELETE');assert.equal((await fetch(app.url+'/s/'+token,{redirect:'manual'})).status,404);
+  assert.equal((await request('/api/logout','POST')).status,200);assert.equal((await request('/api/projects')).status,401);
+  for(let i=0;i<10;i++)await request('/api/login','POST',{username:'absent',password:'wrong'});
+  assert.equal((await request('/api/login','POST',{username:'absent',password:'wrong'})).status,429);
+  assert(!(await readFile(file)).includes(Buffer.from('ExampleOnly-TestPassword-123456')));
+});

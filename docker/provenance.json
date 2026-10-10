@@ -1,0 +1,8 @@
+{
+  "upstream": "https://github.com/moby/profiles",
+  "commit": "2ceae35d351c156cb5a8efc0fdc4a08cf94569d8",
+  "source": "seccomp/default.json",
+  "sourceSha256": "6416b47770785a41ac59073cdc77d9fe98517df2799dc83ef207e622de3053f6",
+  "changes": "Дополнительные clone/unshare/setns/mount/umount2/pivot_root для user/mount namespaces bubblewrap; остальные правила сохранены.",
+  "license": "Apache-2.0"
+}

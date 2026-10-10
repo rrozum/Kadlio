@@ -1,0 +1,128 @@
+/* Одна вертикальная панель оставляет нижнюю ленту для слайдов и переходов. */
+.editor-app {
+  grid-template-rows: 54px minmax(0, 1fr) 151px;
+}
+.editor-app .workspace {
+  position: relative;
+}
+.editor-app .chat-panel {
+  grid-column: 1;
+  grid-row: 1;
+}
+.editor-app .canvas-panel {
+  grid-column: 2;
+  grid-row: 1;
+}
+.editor-app .properties-panel {
+  grid-column: 3;
+  grid-row: 1;
+}
+.editor-app .filmstrip {
+  height: 151px;
+}
+.editor-app .editor-tool-rail {
+  position: absolute;
+  right: 12px;
+  top: 14px;
+  max-height: calc(100% - 28px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  z-index: 20;
+  padding: 4px;
+  gap: 4px;
+}
+.editor-app .editor-tool-rail button {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 29px;
+  min-width: 26px;
+  min-height: 29px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  color: var(--os-muted);
+}
+.editor-app .editor-tool-rail button > span {
+  display: none;
+}
+.editor-app .editor-tool-rail button:is(.active, [aria-pressed='true']) {
+  color: var(--os-accent);
+  background: var(--os-accent-soft);
+}
+.editor-app .editor-tool-rail button:hover:not(:disabled) {
+  background: var(--os-inset);
+  color: var(--os-ink);
+}
+.editor-app .editor-tool-rail button:focus-visible {
+  outline: 2px solid var(--os-accent);
+  outline-offset: -2px;
+}
+.editor-app .editor-tool-rail button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.rail-divider {
+  height: 1px;
+  min-height: 1px;
+  width: 20px;
+  margin: 3px auto;
+  background: var(--os-line-hi);
+  flex-shrink: 0;
+}
+.editor-app .panel-tabs {
+  padding: 0 6px;
+}
+.editor-app .panel-tabs button {
+  font-size: 9px;
+  padding: 0 6px;
+  min-width: 0;
+  white-space: nowrap;
+}
+.editor-app .app-toast {
+  bottom: 168px;
+}
+.editor-app .timeline-status {
+  top: 8px;
+  bottom: auto;
+}
+.editor-app .chat-panel.mobile-open {
+  bottom: 151px;
+}
+@media (max-width: 700px) {
+  .editor-app {
+    grid-template-rows: 50px minmax(0, 1fr) 132px;
+  }
+  .editor-app .filmstrip {
+    height: 132px;
+  }
+  .editor-app .canvas-space {
+    padding-right: 16px;
+    margin-right: 42px;
+  }
+  .editor-app .canvas-footer {
+    padding-right: 58px;
+  }
+  .editor-app .editor-tool-rail {
+    right: 10px;
+    top: 12px;
+    max-height: calc(100% - 24px);
+  }
+  .editor-app .properties-panel.mobile-open {
+    right: 52px;
+    bottom: 144px;
+    max-width: calc(100vw - 70px);
+  }
+  .editor-app .chat-panel.mobile-open {
+    bottom: 132px;
+  }
+  .editor-app .app-toast {
+    bottom: 149px;
+  }
+  .editor-app .timeline-status {
+    font-size: 9px;
+  }
+}

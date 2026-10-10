@@ -1,0 +1,39 @@
+{
+  "name": "kadlio",
+  "version": "0.8.0",
+  "private": false,
+  "type": "module",
+  "description": "HTML-first AI presentation studio with visual blocks, ACP, MCP and editable export",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env backend/main.js",
+    "test": "node --test test/*.test.js",
+    "test:ui": "node test/spa-navigation-ui.js && node test/spa-loading-ui.js && node test/editor-ui.js && node test/annotations-ui.js && node test/canvas-interactions-ui.js && node test/canvas-zoom-ui.js && node test/template-variables-ui.js && node test/presentation-design-ui.js && node test/themes-ui.js && node test/presentation-motion-ui.js && node test/chat-attachments-ui.js && node test/preview-ui.js && node test/theme-loading-ui.js && node test/source-editor-ui.js && node test/theme-exit-ui.js && node test/editor-performance-ui.js && node test/viewer-performance-ui.js && node test/gallery-performance-ui.js && node test/theme-chat-ui.js && node test/theme-tour-ui.js && node test/creation-tour-regression-ui.js && node test/gallery-actions-ui.js && node test/gallery-actions-races-ui.js && node test/filmstrip-timeline-ui.js && node test/editor-tools-ui.js && node test/design-elements-library-ui.js && node --test test/reference-import-regression.js && node test/html-selection-ui.js && node test/icon-library-ui.js && node test/pptx-import-ui.js && node test/share-feedback-ui.js && node test/guest-chat-stream-ui.js && node test/slide-runtime-ui.js && node test/slide-authoring-ui.js && node test/transition-snippet-ui.js",
+    "user": "node --env-file-if-exists=.env backend/cli/user.js",
+    "mcp": "node backend/modules/mcp/server.js",
+    "format": "node scripts/format.mjs",
+    "format:check": "node scripts/format.mjs --check"
+  },
+  "dependencies": {
+    "@agentclientprotocol/codex-acp": "2.1.1",
+    "@agentclientprotocol/sdk": "1.7.0",
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "@napi-rs/canvas": "1.0.10",
+    "image-size": "2.0.4",
+    "jszip": "3.10.1",
+    "linkedom": "0.18.12",
+    "openai": "7.30.0",
+    "pdfjs-dist": "6.4.299",
+    "playwright": "1.61.1",
+    "pptxgenjs": "4.0.1"
+  },
+  "devDependencies": {
+    "pdf-lib": "1.17.1"
+  },
+  "overrides": {
+    "image-size": "2.0.4"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,18 @@
+node_modules/
+.runtime/
+# Готовые файлы в корне; backend/modules/exports — исходники приложения.
+/exports/
+test-results/
+*.tmp
+.DS_Store
+.env
+.env.*
+!.env.example
+*.sqlite
+*.sqlite-*
+deploy-private/
+data/
+state/
+*.log
+compose.private.yaml
+private/

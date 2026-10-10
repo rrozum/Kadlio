@@ -1,0 +1,110 @@
+.slide-layers {
+  border-bottom: 1px solid var(--os-line);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+.slide-layers > summary {
+  font-size: 11px;
+  font-weight: 550;
+  color: var(--os-ink);
+  cursor: pointer;
+}
+.layers-hint,
+.layers-limit {
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--os-muted);
+  margin: 10px 0;
+}
+.layers-list {
+  max-height: 260px;
+  overflow: auto;
+  margin-top: 10px;
+  overscroll-behavior: contain;
+}
+.layer-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 27px;
+  padding-left: calc(var(--layer-depth, 0) * 9px);
+  border-radius: 5px;
+}
+.editor-app .layer-row button {
+  min-height: 24px;
+  background: transparent;
+  border: 0;
+  padding: 3px 4px;
+  color: var(--os-muted);
+  font-size: 10px;
+  min-width: 0;
+}
+.layer-row .layer-select {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.layer-row .layer-lock {
+  width: 24px;
+  flex-shrink: 0;
+}
+.layer-selected {
+  background: var(--os-accent-soft);
+}
+.editor-app .layer-selected .layer-select {
+  color: var(--os-accent);
+}
+.theme-layer-row {
+  border-bottom: 1px solid var(--os-line);
+  margin-bottom: 5px;
+}
+.editor-app .layer-row button:hover {
+  color: var(--os-ink);
+  background: var(--os-inset);
+}
+.selection-layer.locked {
+  border-style: dashed;
+  opacity: 0.85;
+}
+.selection-layer.locked .selection-tag {
+  background: var(--os-muted);
+  color: var(--os-bg);
+}
+.property-lock-status {
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--os-muted);
+  margin: 8px 0 12px;
+}
+.property-lock-status:empty {
+  display: none;
+}
+.property-heading-tools {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+.editor-app #lock-block {
+  min-width: 24px;
+  width: 24px;
+  font-size: 13px;
+}
+.editor-app #block-properties fieldset:disabled {
+  opacity: 0.55;
+}
+.editor-app #select-parent {
+  font-size: 10px;
+}
+.slide-html-control {
+  margin: 12px 0 0;
+  border-top: 1px solid var(--os-line);
+  padding-top: 12px;
+}
+.slide-html-control button {
+  width: 100%;
+  font-size: 11px;
+  background: var(--os-inset);
+  color: var(--os-ink);
+}

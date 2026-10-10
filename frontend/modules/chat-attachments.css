@@ -1,0 +1,113 @@
+.chat-attachments {
+  display: grid;
+  gap: 5px;
+  max-height: 190px;
+  overflow: auto;
+  padding: 7px 7px 0;
+}
+.attachment-chip {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 7px;
+  border: 1px solid var(--os-line);
+  border-radius: 7px;
+  background: var(--os-inset);
+  min-width: 0;
+}
+.attachment-chip img,
+.message-attachment img {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border-radius: 4px;
+  background: var(--os-surface);
+}
+.attachment-chip-text {
+  flex: 1;
+  min-width: 0;
+}
+.attachment-chip strong,
+.message-attachment strong {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  line-height: 1.5;
+  color: var(--os-ink);
+}
+.attachment-chip small,
+.message-attachment small {
+  display: block;
+  font-size: 9px;
+  line-height: 1.5;
+  color: var(--os-muted);
+  overflow-wrap: anywhere;
+}
+.attachment-chip.error {
+  border-color: #ef444488;
+}
+.attachment-chip.error small {
+  color: #ef4444;
+}
+.attachment-chip progress {
+  display: block;
+  width: 100%;
+  height: 3px;
+  accent-color: var(--os-accent);
+  margin-top: 4px;
+}
+.editor-app .attachment-chip button {
+  min-height: 22px;
+  min-width: 20px;
+  padding: 1px 3px;
+  background: transparent;
+  color: var(--os-muted);
+  border: 0;
+  font-size: 16px;
+}
+.attachment-file-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  color: var(--os-muted);
+  font-size: 20px;
+}
+.chat-attachment-status {
+  font-size: 9px;
+  line-height: 1.5;
+  color: #ef4444;
+  padding: 0 10px;
+}
+.chat-attachment-status:empty {
+  display: none;
+}
+.message-attachments {
+  display: grid;
+  gap: 5px;
+  margin: 8px 0;
+}
+.message-attachment {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 7px;
+  min-width: 0;
+  text-decoration: none;
+  background: var(--os-soft);
+  border: 1px solid var(--os-line);
+  border-radius: 7px;
+  white-space: normal;
+}
+.message-attachment > span:last-child {
+  min-width: 0;
+}
+.message-attachment:hover {
+  border-color: var(--os-accent);
+}

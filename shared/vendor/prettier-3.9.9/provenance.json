@@ -1,0 +1,44 @@
+{
+  "package": "prettier",
+  "version": "3.9.9",
+  "source": "https://registry.npmjs.org/prettier/-/prettier-3.9.9.tgz",
+  "packageTarballSHA256": "c3b162d30c45126873cc6338a539383e92120a390d10de78f373f42c2045b338",
+  "files": [
+    {
+      "source": "standalone.mjs",
+      "file": "standalone.js",
+      "sha256": "eec595bfcdb42ffe80583bf7d96c0f7f4ddeb284f6ae494b5bec4698b20e81ea"
+    },
+    {
+      "source": "plugins/html.mjs",
+      "file": "html.js",
+      "sha256": "fa6ec8d1b49cf5573863b34754e532203b165303ea04caaf328f54a12433c65d"
+    },
+    {
+      "source": "plugins/postcss.mjs",
+      "file": "postcss.js",
+      "sha256": "1a3c77bd44bf3ff5d8a0b87d312fe54594d112315d786a2eb10cab3a7e4e1bfa"
+    },
+    {
+      "source": "LICENSE",
+      "file": "LICENSE",
+      "sha256": "b0f2417199889f1c0d28ec4e0244eacf1a15de5819d61f641dd7d8f45153ac9c"
+    },
+    {
+      "source": "THIRD-PARTY-NOTICES.md",
+      "file": "THIRD-PARTY-NOTICES.md",
+      "sha256": "aaf6032babb49d6e5601ab06f315d6d6bab605cb4672f03e9972ff3c80232cdc"
+    },
+    {
+      "source": "plugins/babel.mjs",
+      "file": "babel.js",
+      "sha256": "b97b31d647e6a31e62fd2d69b02b28f257c4f7511b037d2a277138a83ef8f7d7"
+    },
+    {
+      "source": "plugins/estree.mjs",
+      "file": "estree.js",
+      "sha256": "a4c6f661c2a70ca8f02ae065324da643ef850026d0424c34e2f0b5ffdb7be066"
+    }
+  ],
+  "note": "Copied without code changes. Prettier ES module files use .js filenames for the existing web server MIME map."
+}

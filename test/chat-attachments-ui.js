@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+import {mkdtemp,rm,mkdir} from 'node:fs/promises';
+import {createServer as createHTTPServer} from 'node:http';
+import os from 'node:os';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {chromium} from 'playwright';
+import {createServer} from '../backend/http/server.js';
+
+const root=fileURLToPath(new URL('..',import.meta.url)),dataDir=await mkdtemp(path.join(os.tmpdir(),'presentations-chat-files-ui-'));
+const application=await createServer(root,{authRequired:false,dataDir}),project=await application.library.create({title:'Chat attachments fixture'});
+await application.ai.saveSettings({provider:'openai',model:'',clearApiKey:true});
+const screenshots=path.join(root,'test-results');await mkdir(screenshots,{recursive:true});
+let received;
+const provider=createHTTPServer(async(req,res)=>{let raw='';for await(const chunk of req)raw+=chunk;received=JSON.parse(raw);res.writeHead(200,{'Content-Type':'text/event-stream'});res.end('data: '+JSON.stringify({id:'files-fixture',choices:[{index:0,delta:{content:'Вижу изображение и требования из файла.'},finish_reason:null}]})+'\n\ndata: [DONE]\n\n');});await new Promise(resolve=>provider.listen(0,'127.0.0.1',resolve));
+const browser=await chromium.launch({headless:true,...(process.env.PRESENTATION_BROWSER_PATH?{executablePath:process.env.PRESENTATION_BROWSER_PATH}:{})});
+const page=await browser.newPage({viewport:{width:1660,height:1000}}),errors=[];page.on('pageerror',error=>errors.push(error.message));
+const pixel=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64');
+try{
+  await page.goto(application.url+'/projects/'+project.id);await page.locator('#canvas-loading').waitFor({state:'hidden'});
+  let release;const gate=new Promise(resolve=>release=resolve);await page.route('**/attachments',async route=>{await gate;await route.continue();});
+  await page.locator('#chat-file-input').setInputFiles([{name:'diagram.png',mimeType:'image/png',buffer:pixel},{name:'requirements.md',mimeType:'text/markdown',buffer:Buffer.from('# Требования\nОдна понятная мысль на слайд.')}]);
+  await page.locator('.attachment-chip.uploading').first().waitFor();assert.equal(await page.locator('#chat-send').isDisabled(),true);await page.locator('#chat-input').fill('Черновик с вложениями');await page.locator('#chat-input').press('Enter');assert.equal((await application.ai.history(project.id)).messages.length,0);release();await page.waitForFunction(()=>document.querySelectorAll('.attachment-chip.ready').length===2);await page.unroute('**/attachments');assert.equal(await page.locator('#chat-send').isDisabled(),false);
+  // SSE can return HTTP 200 and still reject before the user message is accepted.
+  await page.locator('#chat-send').click();await page.getByText('В настройках ИИ укажите API-ключ и имя модели.',{exact:true}).first().waitFor();await page.locator('#chat-stop').waitFor({state:'hidden'});assert.equal(await page.locator('.attachment-chip.ready').count(),2);assert.equal(await page.locator('#chat-input').inputValue(),'Черновик с вложениями');assert.equal((await application.ai.history(project.id)).messages.length,0);
+  await page.locator('#ai-settings-button').click();await page.locator('#ai-provider').selectOption('openai');await page.locator('#ai-base-url').fill('http://127.0.0.1:'+provider.address().port+'/v1');await page.locator('#ai-api-mode').selectOption('chat-completions');await page.locator('#ai-model').fill('files-fixture');await page.locator('#ai-api-key').fill('fixture-key-not-secret');await page.locator('#ai-settings-form button[type=submit]').click();await page.locator('#settings-dialog').waitFor({state:'hidden'});
+  await page.locator('#chat-send').click();await page.getByText('Вижу изображение и требования из файла.',{exact:true}).waitFor();await page.locator('#chat-stop').waitFor({state:'hidden'});assert.equal(await page.locator('.attachment-chip').count(),0);assert.equal(await page.locator('#chat-input').inputValue(),'');assert.equal(await page.locator('.message-attachment').count(),2);
+  assert(JSON.stringify(received).includes('data:image/png;base64,'));assert(JSON.stringify(received).includes('Одна понятная мысль'));
+  let history=(await application.ai.history(project.id)).messages;const user=history.find(message=>message.role==='user');assert.equal(user.attachments.length,2);assert(!JSON.stringify(user.attachments).includes('base64'));assert.equal(user.attachments[0].name,'diagram.png');
+  await page.reload();await page.locator('#canvas-loading').waitFor({state:'hidden'});await page.locator('.message-attachment').first().waitFor();assert.equal(await page.locator('.message-attachment').count(),2);const fileURL=await page.locator('.message-attachment').first().getAttribute('href');assert.equal((await fetch(application.url+fileURL)).status,200);
+  await page.locator('#chat-file-input').setInputFiles({name:'too-large.txt',mimeType:'text/plain',buffer:Buffer.alloc(8*1024*1024+1,65)});await page.locator('.attachment-chip.error').waitFor();assert.equal(await page.locator('#chat-send').isDisabled(),true);await page.locator('.attachment-chip .attachment-remove').click();assert.equal(await page.locator('#chat-send').isDisabled(),false);
+  await page.route('**/attachments',route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Fixture upload error'})}));await page.locator('#chat-file-input').setInputFiles({name:'retry.txt',mimeType:'text/plain',buffer:Buffer.from('Повторная загрузка')});await page.locator('.attachment-chip.error').waitFor();assert.equal(await page.locator('#chat-send').isDisabled(),true);await page.unroute('**/attachments');await page.locator('.attachment-retry').click();await page.locator('.attachment-chip.ready').waitFor();assert.equal(await page.locator('#chat-send').isDisabled(),false);
+  // A file-only message remains valid; text can be left empty.
+  await page.locator('#chat-send').click();await page.waitForFunction(()=>document.querySelectorAll('.message-attachment').length===3);await page.locator('#chat-stop').waitFor({state:'hidden'});history=(await application.ai.history(project.id)).messages;assert.equal(history.filter(message=>message.role==='user').at(-1).attachments[0].name,'retry.txt');
+  await page.evaluate(encoded=>{const bytes=Uint8Array.from(atob(encoded),value=>value.charCodeAt(0));const transfer=new DataTransfer();transfer.items.add(new File([bytes],'clipboard.png',{type:'image/png'}));document.getElementById('chat-input').dispatchEvent(new ClipboardEvent('paste',{clipboardData:transfer,bubbles:true,cancelable:true}));},pixel.toString('base64'));await page.locator('.attachment-chip.ready').waitFor();await page.waitForTimeout(150);await page.screenshot({path:path.join(screenshots,'chat-attachments.png')});assert.equal(await page.locator('.attachment-chip img').count(),1);
+  assert.deepEqual(errors,[]);console.log('Chat attachment UI passed: blocked pending upload, error/retry/remove, rejected SSE draft preservation, multimodal API delivery, private persisted history, empty-message files and pasted image.');
+}finally{await browser.close();await application.ai?.close?.();await new Promise(resolve=>application.server.close(resolve));await new Promise(resolve=>provider.close(resolve));await rm(dataDir,{recursive:true,force:true,maxRetries:5,retryDelay:100});}

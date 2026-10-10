@@ -1,0 +1,33 @@
+.dictation-status {
+  margin: 0;
+  padding: 0 5px;
+  color: var(--muted, #8992a4);
+  font-size: 11px;
+  line-height: 1.5;
+  min-height: 0;
+}
+.dictation-status:empty {
+  display: none;
+}
+.dictation-status[data-state='error'] {
+  color: #ef929d;
+}
+#dictation-button[data-state='recording'] {
+  color: #fff;
+  background: #bb4553;
+  border-color: #e26775;
+  box-shadow: 0 0 0 3px #bb455326;
+}
+#dictation-button[data-state='processing'] {
+  opacity: 0.55;
+}
+@media (prefers-reduced-motion: no-preference) {
+  #dictation-button[data-state='recording'] {
+    animation: dictation-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes dictation-pulse {
+    50% {
+      box-shadow: 0 0 0 5px #bb455312;
+    }
+  }
+}

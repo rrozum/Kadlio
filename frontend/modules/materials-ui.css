@@ -1,0 +1,157 @@
+.material-drop {
+  border: 1px dashed var(--os-line-hi);
+  border-radius: 16px;
+  padding: 32px 20px;
+  text-align: center;
+  background: var(--os-surface);
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.material-drop.drag-over {
+  border-color: var(--os-accent);
+  background: var(--os-accent-soft);
+}
+.material-drop p {
+  color: var(--os-muted);
+  margin: 12px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.material-drop .material-drop-title {
+  font-size: 17px;
+  color: var(--os-ink);
+  margin: 0 0 14px;
+}
+.materials-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+.material-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 12px 14px;
+  border: 1px solid var(--os-line);
+  border-radius: 12px;
+  background: var(--os-surface);
+  min-width: 0;
+}
+.material-card > img,
+.material-icon {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: var(--os-soft);
+}
+.material-icon {
+  display: grid;
+  place-items: center;
+  color: var(--os-muted);
+}
+.material-icon svg {
+  width: 22px;
+  height: 22px;
+}
+.material-info {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.material-info > a,
+.material-info > strong {
+  color: var(--os-ink);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: none;
+  font-weight: 500;
+}
+.material-info > a:hover {
+  text-decoration: underline;
+}
+.material-status {
+  font-size: 11px;
+  color: var(--os-muted);
+}
+.material-upload.error .material-status {
+  color: #ef4444;
+}
+.material-info progress {
+  height: 4px;
+  width: 100%;
+  margin-top: 5px;
+  accent-color: var(--os-accent);
+}
+.material-card button {
+  flex-shrink: 0;
+}
+.material-card .material-retry {
+  font-size: 11px;
+  padding: 5px 8px;
+}
+.material-remove {
+  padding: 7px !important;
+  min-height: 30px !important;
+}
+.material-remove svg {
+  width: 15px;
+  height: 15px;
+}
+.materials-dialog {
+  width: min(680px, calc(100vw - 30px));
+}
+.materials-dialog .materials-list {
+  max-height: 40vh;
+  overflow: auto;
+}
+.materials-dialog > p {
+  color: var(--os-muted);
+  font-size: 13px;
+}
+.materials-description {
+  white-space: pre-wrap;
+  line-height: 1.7;
+  padding: 14px;
+  border-radius: 10px;
+  background: var(--os-soft);
+}
+@media (max-width: 600px) {
+  .material-drop {
+    padding: 24px 14px;
+  }
+  .material-card {
+    gap: 10px;
+    padding: 10px;
+  }
+  .material-card > img,
+  .material-icon {
+    width: 35px;
+    height: 35px;
+  }
+  .material-status {
+    font-size: 10px;
+  }
+  .material-card .material-retry {
+    font-size: 10px;
+  }
+}
+
+.editor-app .header-actions #materials-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+@media (max-width: 700px) {
+  .editor-app .header-actions #materials-button span {
+    display: none;
+  }
+  .editor-app .project-name {
+    max-width: calc(100vw - 295px);
+  }
+}

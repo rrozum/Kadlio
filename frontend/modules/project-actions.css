@@ -1,0 +1,59 @@
+.project-actions-menu {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 5px;
+  width: 186px;
+  background: var(--os-surface);
+  color: var(--os-ink);
+  border: 1px solid var(--os-line-hi);
+  border-radius: 11px;
+  box-shadow: 0 10px 35px #0003;
+  overflow: visible;
+}
+.project-actions-menu [role='menuitem'] {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  text-align: left;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  text-decoration: none;
+  cursor: pointer;
+}
+.project-actions-menu [role='menuitem']:is(:hover, :focus-visible) {
+  outline: 0;
+  background: var(--os-soft);
+}
+.project-actions-menu [data-danger] {
+  color: #ef4444;
+  border-top: 1px solid var(--os-line);
+  margin-top: 3px;
+  padding-top: 12px;
+}
+.project-menu-trigger[aria-expanded='true'] {
+  background: var(--os-accent-soft) !important;
+  color: var(--os-accent) !important;
+}
+.gallery-share-dialog .inline-field {
+  display: flex;
+  gap: 8px;
+}
+.gallery-share-dialog .inline-field input {
+  min-width: 0;
+  flex: 1;
+}
+.gallery-share-dialog #gallery-share-open {
+  display: block;
+  margin: 12px 0;
+  color: var(--os-accent);
+}
+.project-menu-trigger:hover {
+  background: var(--os-soft) !important;
+  border-color: var(--os-line-hi) !important;
+  color: var(--os-ink) !important;
+}

@@ -1,0 +1,127 @@
+.editor-app .slide-script-dialog {
+  width: min(1150px, 95vw);
+  max-width: 95vw;
+}
+.authoring-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.85fr);
+  gap: 22px;
+  align-items: start;
+}
+.authoring-source {
+  min-width: 0;
+}
+.authoring-source .source-editor {
+  --source-height: 34vh;
+  min-height: 240px;
+}
+.authoring-tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+.authoring-tabs button {
+  font-size: 11px;
+}
+.authoring-tabs [aria-selected='true'] {
+  background: var(--os-accent-soft);
+  color: var(--os-accent);
+}
+.authoring-preview {
+  position: relative;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  border: 1px solid var(--os-line);
+  border-radius: 10px;
+  background: var(--os-inset);
+}
+.authoring-preview > .slide-runtime-frame {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  width: 1280px;
+  height: 720px;
+  transform: scale(var(--scene-scale, 1));
+  transform-origin: 0 0;
+}
+.authoring-placeholder {
+  margin: 0;
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 30px;
+  font-size: 11px !important;
+  color: var(--os-muted);
+}
+.authoring-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 12px 0;
+}
+.authoring-actions button {
+  font-size: 11px;
+}
+.authoring-errors {
+  font-size: 11px;
+}
+.authoring-errors pre {
+  font:
+    11px/1.6 ui-monospace,
+    monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--os-warning);
+  max-height: 140px;
+  overflow: auto;
+}
+.video-dialog video {
+  width: 100%;
+  max-height: 230px;
+  margin: 12px 0;
+}
+.video-options {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.video-options label {
+  font-size: 11px;
+}
+.video-options input {
+  width: auto !important;
+}
+.slide-script-dialog #snippet-params {
+  font:
+    11px/1.6 ui-monospace,
+    monospace;
+  min-height: 75px;
+}
+.authoring-player {
+  position: sticky;
+  top: 0;
+}
+.source-editor .token.keyword {
+  color: #c8a5e8;
+}
+[data-ui-theme='light'] .source-editor .token.keyword {
+  color: #7542a8;
+}
+@media (max-width: 800px) {
+  .authoring-workspace {
+    grid-template-columns: 1fr;
+  }
+  .authoring-player {
+    position: static;
+  }
+  .authoring-source .source-editor {
+    --source-height: 30vh;
+    min-height: 220px;
+  }
+  .video-options {
+    gap: 10px;
+  }
+}

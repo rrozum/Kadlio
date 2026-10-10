@@ -1,0 +1,102 @@
+/* Только контролы просмотрщика; токены редактора и проектов находятся в openscreen.css. */
+html[data-ui-theme='light'] {
+  color-scheme: light;
+}
+/* Меняем контролы просмотрщика, сохраняя .slide и его переменные. */
+[data-ui-theme='light'] body:not(.editor-app):not(.projects-app) {
+  background: #edf2f7;
+}
+[data-ui-theme='light'] .toolbar,
+[data-ui-theme='light'] .notes-drawer,
+[data-ui-theme='light'] .annotation-panel,
+[data-ui-theme='light'] .presenter-notes {
+  background: #f8fbfdf7;
+  border-color: #bcd0de;
+  color: #31536b;
+}
+[data-ui-theme='light'] .toolbar button,
+[data-ui-theme='light'] .notes-drawer button,
+[data-ui-theme='light'] .annotation-panel button,
+[data-ui-theme='light'] .presenter-notes button {
+  background: #e6eff5;
+  border-color: #bed4e3;
+  color: #436b88;
+}
+[data-ui-theme='light'] .notes-tools {
+  background: #f8fbfdf7;
+  border-color: #bfd6e5;
+}
+[data-ui-theme='light'] .note-text p {
+  color: #355c78;
+}
+[data-ui-theme='light'] .note-edit-hint,
+[data-ui-theme='light'] .source-tip {
+  color: #7b99ad;
+}
+[data-ui-theme='light'] .note-text[contenteditable]:focus {
+  background: #e6f3fb;
+  border-color: #7eb9df;
+}
+[data-ui-theme='light'] .modal {
+  background: #f3f8fcf7;
+  color: #31546e;
+}
+[data-ui-theme='light'] .help-row {
+  border-color: #c7dae8;
+}
+[data-ui-theme='light'] .help-content p {
+  color: #668ba7;
+}
+[data-ui-theme='light'] .help-row kbd {
+  color: #348fc4;
+}
+[data-ui-theme='light'] .overview-card {
+  background: #e2eef6;
+  border-color: #b2cfe3;
+  color: #426982;
+}
+[data-ui-theme='light'] .overview-card .desc {
+  background: #f4f9fc;
+  color: #426982;
+}
+[data-ui-theme='light'] .next-card {
+  color: #345973;
+}
+[data-ui-theme='light'] .annotation-panel textarea {
+  background: #fff;
+  border-color: #b7d0e2;
+  color: #3b617c;
+}
+/* Общая кнопка смены темы в редакторе, просмотрщике и авторизации. */
+[data-theme-toggle] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+[data-theme-toggle] .theme-icon {
+  flex-shrink: 0;
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+[data-theme-toggle] .theme-label {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.login-theme[data-theme-toggle] {
+  width: auto;
+  padding: 6px 10px;
+}
+@media (max-width: 700px) {
+  [data-theme-toggle] .theme-label {
+    display: none;
+  }
+}
+@media (max-width: 1200px) {
+  .toolbar [data-theme-toggle] .theme-label {
+    display: none;
+  }
+}

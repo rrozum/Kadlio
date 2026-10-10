@@ -1,0 +1,39 @@
+{
+  "package": "prismjs",
+  "version": "1.30.0",
+  "source": "https://registry.npmjs.org/prismjs/-/prismjs-1.30.0.tgz",
+  "packageTarballSHA256": "ac16a9106a28c53b6a6313993c816a3a02525fdfefd7614fc1703df915a9fc11",
+  "files": [
+    {
+      "source": "components/prism-core.min.js",
+      "file": "core.js",
+      "sha256": "6caad316dd991f24f8004e0b9c19c055cb5829ff65e973fbee406f96d81b8e7e"
+    },
+    {
+      "source": "components/prism-markup.min.js",
+      "file": "markup.js",
+      "sha256": "879fc9d256c352d980e053857fa707330853b8bfb67ce284ea661a24dec5756e"
+    },
+    {
+      "source": "components/prism-css.min.js",
+      "file": "css.js",
+      "sha256": "8c9760dba7f26ea842016919544dd9b73a78a36d5b07a1e9842c333ed18ab6ae"
+    },
+    {
+      "source": "LICENSE",
+      "file": "LICENSE",
+      "sha256": "2b947f0901a7ffcf08a89957da9783c0e9c6e72cb6ce8e959f501ab5409e4d2b"
+    },
+    {
+      "source": "components/prism-clike.js",
+      "file": "clike.js",
+      "sha256": "6a7e077bbcb4a2259bc3152e55681f804ec8a3c2b969f234bb220df0f2d79654"
+    },
+    {
+      "source": "components/prism-javascript.js",
+      "file": "javascript.js",
+      "sha256": "7be3e7caf699bfddcd6d94d01e9df233257477f7f521e6c6765f03bd936a2d3e"
+    }
+  ],
+  "note": "Copied core, HTML markup, CSS, clike and JavaScript components without code changes; automatic document highlighting is disabled by the wrapper."
+}

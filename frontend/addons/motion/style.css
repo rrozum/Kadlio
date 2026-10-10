@@ -1,0 +1,120 @@
+.effects-dialog {
+  width: min(1040px, calc(100vw - 36px));
+  max-width: 1040px;
+}
+.effects-intro {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--os-muted);
+}
+.effects-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 235px;
+  gap: 20px;
+  margin: 20px 0;
+}
+.effects-preview {
+  align-self: start;
+  width: 100%;
+  aspect-ratio: 16/9;
+  position: relative;
+  overflow: hidden;
+  background: var(--os-inset);
+  border: 1px solid var(--os-line);
+  border-radius: 10px;
+}
+.effects-preview iframe {
+  position: absolute;
+  inset: 0;
+  width: 1280px;
+  height: 720px;
+  border: 0;
+  transform: scale(var(--effect-scale, 0.5));
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+.effects-options {
+  display: grid;
+  gap: 5px;
+}
+.effects-options button {
+  display: block;
+  text-align: left;
+  background: var(--os-inset);
+  border: 1px solid transparent;
+  padding: 9px 11px;
+}
+.effects-options button[aria-pressed='true'] {
+  border-color: var(--os-accent);
+  background: var(--os-accent-soft);
+}
+.effects-options strong {
+  display: block;
+  font-size: 11px;
+}
+.effects-options span {
+  display: block;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--os-muted);
+  margin-top: 4px;
+}
+.effects-controls {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+}
+.effects-controls label {
+  font-size: 11px;
+  color: var(--os-muted);
+  margin-right: auto;
+}
+.effects-controls select {
+  display: block;
+  margin-top: 6px;
+  padding: 7px 11px;
+  font-size: 11px;
+}
+.effects-controls button {
+  font-size: 11px;
+}
+.effects-note {
+  font-size: 10px;
+  line-height: 1.7;
+  color: var(--os-muted);
+  margin-bottom: 0;
+}
+@media (max-width: 700px) {
+  .effects-workspace {
+    grid-template-columns: 1fr;
+  }
+  .effects-options {
+    grid-template-columns: 1fr 1fr;
+  }
+  .effects-controls {
+    flex-wrap: wrap;
+  }
+  .effects-controls label {
+    width: 100%;
+  }
+}
+
+.transition-custom-js {
+  margin: 16px 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--os-line);
+}
+.transition-custom-js summary {
+  font-size: 11px;
+  cursor: pointer;
+}
+.transition-custom-js .source-editor {
+  --source-height: 240px;
+  min-height: 200px;
+}
+.transition-custom-js #effect-custom-params {
+  font:
+    11px/1.6 ui-monospace,
+    monospace;
+  min-height: 75px;
+}

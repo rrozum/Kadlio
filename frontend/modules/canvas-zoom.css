@@ -1,0 +1,98 @@
+.editor-app .canvas-space {
+  overflow: auto;
+  overscroll-behavior: contain;
+  align-items: flex-start;
+  justify-content: flex-start;
+  scrollbar-width: thin;
+}
+.editor-app .slide-frame {
+  margin: auto;
+}
+.editor-app .canvas-space[data-zoom-mode='manual'] {
+  padding-top: 30px;
+  padding-bottom: 18px;
+}
+.editor-app .canvas-footer > div {
+  gap: 8px;
+  min-width: 0;
+}
+.editor-app .canvas-footer .canvas-zoom {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.editor-app .canvas-footer #zoom-label {
+  display: inline;
+  min-width: 38px;
+  text-align: center;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+}
+.editor-app .canvas-footer .zoom-button {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  min-width: 25px;
+  min-height: 25px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: var(--os-muted);
+}
+.zoom-button svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.editor-app .canvas-footer .zoom-button:hover:not(:disabled) {
+  color: var(--os-ink);
+  background: var(--os-inset);
+}
+.editor-app .canvas-footer .zoom-button[aria-pressed='true'] {
+  color: var(--os-accent);
+}
+.editor-app .canvas-footer .zoom-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.editor-app .canvas-footer .zoom-button:focus-visible {
+  outline: 2px solid var(--os-accent);
+  outline-offset: -2px;
+}
+.editor-app .canvas-footer #slide-title {
+  min-width: 0;
+  flex: 1;
+}
+@media (max-width: 700px) {
+  .editor-app .canvas-footer {
+    gap: 5px;
+    padding-left: 10px;
+  }
+  .editor-app .canvas-footer > div {
+    gap: 5px;
+  }
+  .editor-app .canvas-footer .canvas-zoom {
+    gap: 1px;
+  }
+  .editor-app .canvas-footer #slide-title {
+    max-width: none;
+  }
+  .editor-app .canvas-footer #zoom-label {
+    min-width: 34px;
+    font-size: 9px;
+  }
+  .editor-app .canvas-footer .zoom-button {
+    width: 23px;
+    height: 24px;
+    min-width: 23px;
+    min-height: 24px;
+  }
+}

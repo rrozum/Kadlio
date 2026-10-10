@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import {mkdtemp,rm} from 'node:fs/promises';
+import {createServer as httpServer} from 'node:http';
+import os from 'node:os';
+import path from 'node:path';
+import {chromium} from 'playwright';
+import {createServer,projectRoot} from '../backend/http/server.js';
+
+const directory=await mkdtemp(path.join(os.tmpdir(),'presentation-guest-stream-')),app=await createServer(projectRoot,{authRequired:false,dataDir:directory}),project=await app.library.create({title:'Held guest chat fixture'});let reply,started;
+const providerStarted=new Promise(resolve=>started=resolve),provider=httpServer(async(req,res)=>{for await(const chunk of req){}res.writeHead(200,{'Content-Type':'text/event-stream'});res.flushHeaders();reply=res;started();});await new Promise(resolve=>provider.listen(0,'127.0.0.1',resolve));
+await app.ai.saveSettings({provider:'openai',apiMode:'chat-completions',baseUrl:'http://127.0.0.1:'+provider.address().port+'/v1',apiKey:'fixture-key-not-secret',model:'held-fixture'});
+const token=await app.library.share(project.id),current=await app.library.get(project.id);await fetch(app.url+'/api/projects/'+project.id+'/share',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({version:current.version,comments:true,notes:false})});
+const feedback=await(await fetch(app.url+'/s/'+token+'/comments',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slideId:'slide-01',x:.3,y:.4,comment:'Approved while agent streams',name:'Fixture guest'})})).json();assert(feedback.id);
+const browser=await chromium.launch({headless:true,...(process.env.PRESENTATION_BROWSER_PATH?{executablePath:process.env.PRESENTATION_BROWSER_PATH}:{})}),page=await browser.newPage({viewport:{width:1660,height:1000}}),errors=[];page.on('pageerror',error=>errors.push(error.message));
+try{
+  await page.goto(app.url+'/projects/'+project.id);await page.locator('#canvas-loading').waitFor({state:'hidden'});await page.locator('#chat-input').fill('Keep this main composer draft');await page.locator('#chat-file-input').setInputFiles({name:'kept.md',mimeType:'text/markdown',buffer:Buffer.from('Keep this main attachment')});await page.locator('.attachment-chip.ready').waitFor();
+  // An element request preserves the main composer while using the same chat.
+  await page.locator('#elements-tool').click();await page.locator('#element-create-open').click();await page.locator('#element-create-prompt').fill('Make a fixture marker');await page.locator('#element-create-submit').click();await providerStarted;await page.locator('#element-create-dialog').waitFor({state:'hidden'});await page.evaluate(()=>window.heldAssistant=document.querySelector('.chat-message.assistant'));
+  await page.locator('#comments-tab').click();await page.locator('[data-feedback-id="'+feedback.id+'"]').click();await page.getByText('Комментарий добавлен в чат. Отправьте запрос агенту, когда будете готовы.',{exact:true}).waitFor();assert(await page.evaluate(()=>window.heldAssistant?.isConnected),'Approval must not remove an active streaming assistant');assert.match(await page.locator('.chat-message.assistant .message-content').textContent(),/Работает/);assert.equal(await page.locator('#chat-input').inputValue(),'Keep this main composer draft');assert.equal(await page.locator('.attachment-chip.ready').count(),1);
+  reply.end('data: '+JSON.stringify({id:'held-result',choices:[{index:0,delta:{content:'Final held answer remains visible'},finish_reason:null}]})+'\n\ndata: [DONE]\n\n');await page.getByText('Final held answer remains visible',{exact:true}).waitFor();await page.locator('#chat-stop').waitFor({state:'hidden'});await page.locator('.chat-message.user').filter({hasText:'Approved while agent streams'}).waitFor();assert.equal(await page.locator('.chat-message.assistant').filter({hasText:'Final held answer remains visible'}).count(),1);assert.equal(await page.locator('#chat-input').inputValue(),'Keep this main composer draft');assert.equal(await page.locator('.attachment-chip.ready').count(),1);assert.deepEqual(errors,[]);
+  console.log('Guest/chat streaming UI passed: explicit approval retains active reply, refreshes history after completion and preserves main text/files.');
+}finally{reply?.end();await browser.close();await app.ai.close();await new Promise(resolve=>app.server.close(resolve));provider.closeAllConnections();await new Promise(resolve=>provider.close(resolve));await rm(directory,{recursive:true,force:true,maxRetries:5,retryDelay:100});}

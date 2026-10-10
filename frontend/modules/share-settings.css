@@ -1,0 +1,49 @@
+.share-options {
+  border: 1px solid var(--border, #475569);
+  border-radius: 12px;
+  margin: 20px 0;
+  padding: 14px;
+}
+.share-options legend {
+  padding: 0 6px;
+  font-size: 13px;
+}
+.share-options label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 12px 0;
+}
+.share-options input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent, #3b82f6);
+}
+.share-options .form-status {
+  margin: 8px 0 0;
+  min-height: 18px;
+  font-size: 12px;
+}
+.guest-feedback {
+  border-top: 1px solid var(--border, #475569);
+  margin-top: 20px;
+  padding-top: 18px;
+}
+.guest-feedback-item {
+  border: 1px solid var(--border, #475569);
+  border-radius: 10px;
+  padding: 12px;
+  margin: 12px 0;
+}
+.guest-feedback-item strong {
+  font-size: 12px;
+}
+.guest-feedback-item p {
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.guest-feedback-item button {
+  font-size: 12px;
+}

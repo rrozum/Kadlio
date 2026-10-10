@@ -1,0 +1,16 @@
+name: Предложение функции
+description: Небольшое улучшение работы с презентациями с понятными границами.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Какую задачу вы хотите решить?
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Предлагаемое поведение
+      description: Опишите простейший полезный результат и часть редактора, которой он касается.
+    validations:
+      required: true

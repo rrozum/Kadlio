@@ -1,0 +1,45 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtemp,rm} from 'node:fs/promises';
+import path from 'node:path';
+import os from 'node:os';
+import {createServer,projectRoot} from '../backend/http/server.js';
+import {AuthStore} from '../backend/modules/auth/service.js';
+import {createProjectTools} from '../backend/modules/mcp/tools.js';
+
+test('public notes are opt-in; guest feedback never reaches agent before authenticated explicit approval',async t=>{
+  const dataDir=await mkdtemp(path.join(os.tmpdir(),'presentation-sharing-')),file=path.join(dataDir,'auth.sqlite'),origin='http://127.0.0.1';
+  const auth=new AuthStore(file,{secure:false});await auth.setUser('fixture','ExampleOnly-TestPassword-123456');const token=await auth.login('fixture','ExampleOnly-TestPassword-123456','fixture');auth.close();
+  const app=await createServer(projectRoot,{dataDir,authRequired:true,authFile:file,publicOrigin:origin});
+  t.after(async()=>{await app.ai.close();app.server.closeAllConnections();await new Promise(resolve=>app.server.close(resolve));await rm(dataDir,{recursive:true,force:true});});
+  const headers={Cookie:'rozum-session='+token,Origin:origin,'Content-Type':'application/json'};
+  const request=(route,method='GET',value,owner=true)=>fetch(app.url+route,{method,headers:owner?headers:{Origin:origin,'Content-Type':'application/json'},body:value===undefined?undefined:JSON.stringify(value),redirect:'manual'});
+  const project=await app.library.create({title:'Shared fixture'}),base='/api/projects/'+project.id;
+  await(await app.library.getStore(project.id)).saveNotes([{id:'slide-01',notes:'OPT_IN_SPEECH',version:0}]);
+  const shared=await(await request(base+'/share','POST',{})).json(),publicRoute='/s/'+shared.token;
+  assert(!(await(await request(publicRoute,'GET',undefined,false)).text()).includes('OPT_IN_SPEECH'));
+  const feedback={slideId:'slide-01',x:.3,y:.4,comment:'GUEST_PENDING_TEXT',name:'Viewer',anchorText:'Title'};
+  assert.equal((await request(publicRoute+'/comments','POST',feedback,false)).status,403);
+  const current=await app.library.get(project.id);
+  assert.equal((await request(base+'/share','PATCH',{comments:true,notes:true,version:current.version})).status,200);
+  assert.equal((await request(base+'/share','PATCH',{comments:false,notes:false,version:current.version})).status,409);
+  const markup=await(await request(publicRoute,'GET',undefined,false)).text();assert(markup.includes('OPT_IN_SPEECH'));assert(markup.includes('"comments":true'));assert(!markup.includes('shareToken'));assert(!markup.includes('username'));
+  const response=await request(publicRoute+'/comments','POST',feedback,false);assert.equal(response.status,200);const saved=await response.json();assert.equal(saved.status,'pending');
+  assert.equal((await request(base+'/feedback','GET',undefined,false)).status,401);assert.equal((await request(base+'/feedback/'+saved.id+'/approve','POST',{},false)).status,401);
+  assert.equal((await request(publicRoute+'/comments','POST',{...feedback,arbitraryServerCommand:'bad'},false)).status,400);
+  const tools=createProjectTools(app.library,{boundProjectId:project.id});
+  assert(!JSON.stringify(await tools.execute('read_project')).includes('GUEST_PENDING_TEXT'));
+  assert.deepEqual(await tools.execute('read_annotations'),[]);assert.deepEqual((await app.ai.history(project.id)).messages,[]);
+  const guestList=await(await request(base+'/feedback')).json();assert.equal(guestList.feedback.length,1);
+  const approved=await(await request(base+'/feedback/'+saved.id+'/approve','POST',{})).json();assert.equal(approved.annotation.id,saved.id);assert.match(approved.annotation.comment,/Viewer/);
+  assert(JSON.stringify(await tools.execute('read_annotations')).includes('GUEST_PENDING_TEXT'));
+  const history=await app.ai.history(project.id);assert.equal(history.messages.length,1);assert.equal(history.messages[0].role,'user');assert.match(history.messages[0].content,/GUEST_PENDING_TEXT/);
+  await request(base+'/feedback/'+saved.id+'/approve','POST',{});assert.equal((await app.ai.history(project.id)).messages.length,1);assert.equal((await app.library.get(project.id)).annotations.length,1);
+  // Public posting is bounded, and revoking the capability blocks future posts.
+  for(let index=0;index<11;index++)assert.equal((await request(publicRoute+'/comments','POST',{...feedback,comment:'Other '+index},false)).status,200);
+  assert.equal((await request(publicRoute+'/comments','POST',feedback,false)).status,429);
+  const spoofed=await fetch(app.url+publicRoute+'/comments',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json','X-Forwarded-For':'203.0.113.42'},body:JSON.stringify(feedback)});
+  assert.equal(spoofed.status,429,'client-controlled forwarded headers must not reset the guest rate limit');
+  await request(base+'/share','DELETE');assert.equal((await request(publicRoute+'/comments','POST',feedback,false)).status,404);
+  assert.equal((await request(publicRoute,'GET',undefined,false)).status,404);
+});

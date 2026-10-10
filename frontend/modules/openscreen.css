@@ -1,0 +1,937 @@
+/* Адаптация токенов и композиции OpenScreen, e8b85444f21623a779c53033424511a58a971bf7.
+ * Источники: src/styles/design-tokens.css, NewEditorShell, EditorShellV4.
+ * Документы слайдов сохраняют свои шрифты и цвета. */
+@font-face {
+  font-family: Geist;
+  src: url('/fonts/Geist-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+:is(.editor-app, .projects-app) {
+  --os-bg: #0a0d12;
+  --os-surface: #14181f;
+  --os-soft: #191d26;
+  --os-inset: #1c2029;
+  --os-raised: #252a35;
+  --os-line: #252a35;
+  --os-line-hi: #3a4150;
+  --os-ink: #e6e9ef;
+  --os-muted: #8b95a3;
+  --os-meta: #7a8491;
+  --os-accent: var(--ui-accent);
+  --os-accent-ink: var(--ui-accent-ink);
+  --os-accent-soft: var(--ui-accent-soft);
+  --os-accent-border: var(--ui-accent-border);
+  --os-shadow: 0 1px 2px #0006, 0 4px 12px -4px #0008;
+  --os-canvas-shadow: 0 10px 30px #0006, 0 3px 8px #0003;
+  --bg: var(--os-bg);
+  --panel: var(--os-surface);
+  --line: var(--os-line);
+  --ink: var(--os-ink);
+  --muted: var(--os-muted);
+  background: var(--os-bg);
+  color: var(--os-ink);
+  font-family:
+    Geist,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Arial,
+    sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+}
+[data-ui-theme='light'] :is(.editor-app, .projects-app) {
+  --os-bg: #eaeef3;
+  --os-surface: #ffffff;
+  --os-soft: #f1f5f9;
+  --os-inset: #e2e8f0;
+  --os-raised: #cbd5e1;
+  --os-line: #e2e8f0;
+  --os-line-hi: #cbd5e1;
+  --os-ink: #0f172a;
+  --os-muted: #64748b;
+  --os-meta: #6b7a90;
+  --os-accent-soft: var(--ui-accent-soft);
+  --os-shadow: 0 1px 2px #0f172a08, 0 2px 8px -2px #0f172a0d;
+  --os-canvas-shadow: 0 12px 30px #0f172a24, 0 4px 10px #0f172a0f;
+}
+:is(.editor-app, .projects-app) button,
+:is(.editor-app, .projects-app) .button {
+  color: var(--os-ink);
+  background: var(--os-inset);
+  border-color: transparent;
+  border-radius: 8px;
+  font-family: inherit;
+  transition:
+    background 120ms,
+    color 120ms,
+    border-color 120ms;
+}
+:is(.editor-app, .projects-app) button:hover:not(:disabled),
+:is(.editor-app, .projects-app) .button:hover {
+  background: var(--os-raised);
+  border-color: transparent;
+}
+:is(.editor-app, .projects-app) .primary {
+  background: var(--os-accent);
+  border-color: var(--os-accent);
+  color: var(--os-accent-ink);
+  font-weight: 600;
+  box-shadow: 0 4px 14px -4px var(--ui-accent-border);
+}
+:is(.editor-app, .projects-app) .primary:hover:not(:disabled) {
+  background: var(--ui-accent-hover);
+  border-color: var(--ui-accent-hover);
+}
+:is(.editor-app, .projects-app) .icon-button,
+:is(.editor-app, .projects-app) .text-button {
+  background: transparent;
+  border-color: transparent;
+  color: var(--os-muted);
+}
+:is(.editor-app, .projects-app) button:focus-visible,
+:is(.editor-app, .projects-app) a:focus-visible {
+  outline-color: var(--os-accent);
+}
+:is(.editor-app, .projects-app) input,
+:is(.editor-app, .projects-app) textarea,
+:is(.editor-app, .projects-app) select {
+  background: var(--os-soft);
+  border-color: var(--os-line);
+  color: var(--os-ink);
+  font-family: inherit;
+  border-radius: 7px;
+  font-size: 12px;
+}
+:is(.editor-app, .projects-app) input:focus,
+:is(.editor-app, .projects-app) textarea:focus,
+:is(.editor-app, .projects-app) select:focus {
+  border-color: var(--os-accent);
+  box-shadow: 0 0 0 3px var(--ui-accent-soft);
+}
+:is(.editor-app, .projects-app) input::placeholder,
+:is(.editor-app, .projects-app) textarea::placeholder {
+  color: var(--os-meta);
+}
+:is(.editor-app, .projects-app) .field-hint,
+:is(.editor-app, .projects-app) .form-status {
+  color: var(--os-muted);
+}
+:is(.editor-app, .projects-app) .danger,
+:is(.editor-app, .projects-app) .form-status.error {
+  color: #ef4444 !important;
+}
+.editor-app {
+  --chat-width: 280px;
+  --properties-width: 310px;
+  grid-template-rows: 54px minmax(0, 1fr) 184px;
+}
+.editor-app .app-header {
+  height: 54px;
+  background: transparent;
+  border-color: var(--os-line-hi);
+  gap: 12px;
+  padding: 0 16px;
+  position: relative;
+}
+:is(.editor-app, .projects-app) .brand {
+  color: var(--os-ink);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.25px;
+}
+:is(.editor-app, .projects-app) .brand-mark {
+  background: var(--os-accent-soft);
+  border-color: transparent;
+  color: var(--os-accent);
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+.editor-app .project-name {
+  display: block;
+  background: transparent;
+  border: 0;
+  padding: 3px 5px;
+  min-width: 0;
+  width: 210px;
+  max-width: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+  white-space: nowrap;
+  color: var(--os-muted);
+  font-size: 12px;
+  font-weight: 500;
+  flex: 0 1 210px;
+}
+.editor-app .project-name:hover {
+  background: var(--os-inset);
+  color: var(--os-ink);
+}
+.editor-app .save-status {
+  width: 5px;
+  height: 5px;
+  flex: 0 0 5px;
+  padding: 0;
+  overflow: hidden;
+  font-size: 0;
+  border-radius: 50%;
+  background: var(--os-accent);
+}
+.editor-app .save-status.dirty {
+  background: #f59e0b;
+}
+.editor-app .save-status.error {
+  background: #ef4444;
+}
+.mode-switch {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border-radius: 9px;
+  background: var(--os-soft);
+  padding: 3px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.editor-app .mode-switch :is(a, span) {
+  padding: 5px 17px;
+  border-radius: 6px;
+  display: block;
+  color: var(--os-muted);
+  font-size: 12px;
+  text-decoration: none;
+  white-space: nowrap;
+  line-height: 1.5;
+}
+.editor-app .mode-switch .selected {
+  background: var(--os-raised);
+  color: var(--os-ink);
+  font-weight: 600;
+  box-shadow: 0 1px 3px #0001;
+}
+.editor-app .header-actions {
+  gap: 7px;
+}
+.editor-app .header-actions .quiet {
+  background: transparent;
+  color: var(--os-muted);
+  box-shadow: none;
+  padding: 7px 9px;
+}
+.editor-app .header-actions .primary {
+  height: 32px;
+  min-height: 32px;
+  padding: 0 13px;
+  font-size: 12px;
+  border-radius: 9px;
+}
+.editor-app .header-actions #present-link {
+  display: none;
+}
+.editor-app .chat-panel {
+  background: transparent;
+  border-right-color: var(--os-line-hi);
+}
+.editor-app .panel-heading {
+  height: 43px;
+  padding: 0 15px;
+}
+.editor-app .panel-heading h1 {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--os-muted);
+}
+.editor-app .provider-state {
+  padding: 0 15px 8px;
+  font-size: 10px;
+  color: var(--os-meta);
+}
+.editor-app .status-dot.connected {
+  background: var(--os-accent);
+  box-shadow: none;
+}
+.editor-app .chat-empty {
+  justify-content: flex-start;
+  padding: 28px 19px 20px;
+}
+.editor-app .assistant-symbol {
+  color: var(--os-accent);
+  font-size: 25px;
+  margin-bottom: 13px;
+}
+.editor-app .chat-empty h2 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 9px;
+}
+.editor-app .chat-empty p {
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--os-muted);
+  margin-bottom: 20px;
+}
+.chat-suggestions {
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: var(--os-inset);
+}
+.editor-app .chat-suggestions .suggestion {
+  padding: 7px 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  line-height: 1.6;
+  color: var(--os-muted);
+  font-size: 11px;
+  border-radius: 0;
+}
+.editor-app .chat-suggestions .suggestion:before {
+  content: '';
+  height: 4px;
+  width: 4px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--os-accent);
+}
+.editor-app .chat-suggestions .suggestion span {
+  margin-left: auto;
+  color: var(--os-meta);
+}
+.editor-app .chat-empty > .primary {
+  font-size: 11px;
+  margin-top: 14px;
+  min-height: 32px;
+  border-radius: 8px;
+  width: 100%;
+}
+.editor-app .chat-composer {
+  background: var(--os-soft);
+  border-color: var(--os-line-hi);
+  margin: 11px;
+  border-radius: 10px;
+}
+.editor-app .chat-composer textarea {
+  background: transparent;
+  border: 0;
+  font-size: 12px;
+  padding: 12px;
+  min-height: 64px;
+}
+.editor-app .chat-composer textarea:focus {
+  box-shadow: none;
+}
+.editor-app .composer-bottom {
+  font-size: 10px;
+  color: var(--os-meta);
+}
+.editor-app .send-button {
+  background: var(--os-accent);
+  color: var(--os-accent-ink);
+  border: 0;
+}
+.editor-app .send-button:hover {
+  background: var(--ui-accent-hover);
+}
+.editor-app .chat-message {
+  font-size: 12px;
+  border-radius: 10px;
+  color: var(--os-ink);
+}
+.editor-app .chat-message.user {
+  background: var(--os-inset);
+  border-color: var(--os-line);
+  margin-left: 10px;
+}
+.editor-app .chat-message.assistant {
+  background: var(--os-surface);
+  border-color: var(--os-line);
+}
+.editor-app .chat-message.system {
+  color: var(--os-muted);
+  background: var(--os-soft);
+  border-color: var(--os-line-hi);
+}
+.editor-app .message-label,
+.editor-app .chat-message.user .message-label {
+  color: var(--os-meta);
+  font-size: 9px;
+  letter-spacing: 0.5px;
+}
+.editor-app .tool-result {
+  background: var(--os-accent-soft);
+  border-color: var(--os-accent-border);
+  color: var(--os-muted);
+}
+.editor-app .message-tools {
+  border-color: var(--os-line);
+}
+.editor-app .annotation-context {
+  background: var(--os-accent-soft);
+  border-color: var(--os-accent-border);
+  color: var(--os-muted);
+}
+.editor-app .canvas-panel {
+  background: transparent;
+}
+.editor-app .canvas-space {
+  padding: 18px 22px 12px;
+}
+.editor-app .slide-frame {
+  box-shadow: var(--os-canvas-shadow);
+  border-radius: 12px;
+}
+.editor-app .slide-frame iframe {
+  border-radius: 12px;
+}
+.editor-app .canvas-loading {
+  background: var(--os-bg);
+  color: var(--os-muted);
+}
+.editor-app .canvas-footer {
+  height: 31px;
+  font-size: 10px;
+  padding: 0 22px;
+  color: var(--os-meta);
+}
+.editor-app .canvas-footer .footer-divider {
+  color: var(--os-line-hi);
+}
+.editor-app .properties-panel {
+  position: relative;
+  margin: 14px 49px 14px 10px;
+  border: 1px solid var(--os-line);
+  border-radius: 12px;
+  background: var(--os-soft);
+  box-shadow: var(--os-shadow);
+  overflow: visible;
+}
+.editor-app .panel-tabs {
+  height: 42px;
+  border-color: var(--os-line);
+  padding: 0 9px;
+  border-radius: 12px 12px 0 0;
+  background: var(--os-soft);
+}
+.editor-app .panel-tabs button {
+  background: transparent;
+  color: var(--os-muted);
+  font-size: 10px;
+  padding: 0 9px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+}
+.editor-app .panel-tabs button[aria-selected='true'] {
+  color: var(--os-ink);
+  border-bottom-color: var(--os-accent);
+}
+.property-rail {
+  position: absolute;
+  right: -39px;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  gap: 4px;
+  background: var(--os-soft);
+  border: 1px solid var(--os-line);
+  border-radius: 10px;
+  box-shadow: var(--os-shadow);
+}
+.editor-app .property-rail button {
+  width: 26px;
+  height: 29px;
+  min-width: 26px;
+  min-height: 29px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--os-muted);
+}
+.editor-app .property-rail button[aria-pressed='true'] {
+  color: var(--os-accent);
+  background: var(--os-accent-soft);
+}
+.editor-app .panel-content {
+  padding: 16px 13px;
+  background: transparent;
+  border-radius: 0 0 12px 12px;
+}
+.editor-app .property-heading {
+  font-size: 11px;
+  margin-bottom: 12px;
+}
+.editor-app .selection-empty {
+  margin: 20px 0 26px;
+}
+.editor-app .selection-empty p {
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--os-muted);
+}
+.editor-app .empty-symbol {
+  color: var(--os-meta);
+  font-size: 24px;
+}
+.editor-app fieldset,
+.editor-app .module-actions {
+  border-color: var(--os-line);
+}
+.editor-app legend,
+.editor-app .module-actions h3 {
+  color: var(--os-muted);
+  font-size: 10px;
+  font-weight: 500;
+}
+.editor-app .field-grid label,
+.editor-app .block-label {
+  color: var(--os-meta);
+  font-size: 10px;
+}
+.editor-app .field-grid input,
+.editor-app .block-label input {
+  border-color: transparent;
+  background: var(--os-inset);
+  padding: 6px 8px;
+  height: 30px;
+}
+.editor-app .format-buttons button {
+  background: var(--os-inset);
+  color: var(--os-muted);
+  border-color: transparent;
+}
+.editor-app .format-buttons button[aria-pressed='true'] {
+  background: var(--os-accent-soft);
+  border-color: var(--os-accent-border);
+  color: var(--os-accent);
+}
+.editor-app .module-actions button,
+.editor-app .full-width {
+  font-size: 11px;
+  background: var(--os-inset);
+  color: var(--os-muted);
+  border-color: transparent;
+}
+.editor-app .notes-editor {
+  background: var(--os-surface);
+  border-color: var(--os-line);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.editor-app .comment-list-item {
+  background: var(--os-surface);
+  border-color: var(--os-line);
+  color: var(--os-ink);
+}
+.editor-app .comment-list-item strong {
+  color: var(--os-accent);
+}
+.editor-app .annotation-popover {
+  background: var(--os-surface);
+  border-color: var(--os-line-hi);
+  color: var(--os-ink);
+  box-shadow: var(--os-canvas-shadow);
+}
+.editor-app .comment-pin {
+  background: var(--os-accent);
+  border-color: white;
+  color: var(--os-accent-ink);
+}
+.editor-app .comment-pin:hover,
+.editor-app .comment-pin.active {
+  background: var(--ui-accent-hover);
+}
+.editor-app .comment-pin.resolved {
+  background: var(--os-muted);
+  opacity: 0.65;
+}
+.editor-app .selection-layer {
+  border-color: var(--os-accent);
+}
+.editor-app .selection-tag,
+.editor-app .move-grip {
+  background: var(--os-accent);
+  color: var(--os-accent-ink);
+}
+.editor-app .resize-handle {
+  border-color: var(--os-accent);
+  background: white;
+}
+.editor-app .filmstrip {
+  height: 184px;
+  padding: 0 16px;
+  border-color: var(--os-line-hi);
+  background: var(--os-surface);
+}
+.editor-app .filmstrip > .canvas-tools {
+  height: 33px;
+  padding: 0;
+  border-bottom: 1px solid var(--os-line);
+  gap: 10px;
+}
+.editor-app .canvas-tools .tool-button {
+  background: transparent;
+  border-color: transparent;
+  color: var(--os-muted);
+  font-size: 11px;
+  padding: 5px 8px;
+  min-height: 26px;
+}
+.editor-app .canvas-tools .tool-button.active {
+  color: var(--os-accent);
+  background: var(--os-accent-soft);
+  border-color: transparent;
+}
+.editor-app .canvas-tools .tool-button span {
+  font-size: 10px;
+}
+.editor-app .filmstrip-heading {
+  height: 29px;
+  color: var(--os-muted);
+  font-size: 10px;
+}
+.editor-app .filmstrip-heading #filmstrip-count {
+  color: var(--os-meta);
+}
+.editor-app .filmstrip-heading button {
+  background: transparent;
+  color: var(--os-muted);
+  border-color: transparent;
+  font-size: 10px;
+  min-height: 23px;
+}
+.editor-app .slide-list {
+  height: 117px;
+  padding: 5px 0 10px;
+  gap: 12px;
+}
+.editor-app .slide-thumbnail {
+  background: var(--os-soft);
+  border-color: var(--os-line-hi);
+  width: 164px;
+  border-radius: 8px;
+}
+.editor-app .slide-thumbnail.active {
+  border-color: var(--os-accent);
+  box-shadow: 0 0 0 2px var(--os-accent-soft);
+}
+.editor-app .thumb-label {
+  color: var(--os-muted);
+}
+.editor-app .thumb-comment-count {
+  background: var(--os-accent);
+  color: var(--os-accent-ink);
+}
+:is(.editor-app, .projects-app) .app-dialog {
+  background: var(--os-surface);
+  border-color: var(--os-line-hi);
+  color: var(--os-ink);
+  font-family: inherit;
+  box-shadow: var(--os-canvas-shadow);
+  border-radius: 12px;
+}
+:is(.editor-app, .projects-app) .app-dialog p,
+:is(.editor-app, .projects-app) .app-dialog label {
+  color: var(--os-muted);
+}
+.editor-app .source-dialog textarea {
+  background: var(--os-soft);
+  color: var(--os-ink);
+  font-family: ui-monospace, monospace;
+}
+.editor-app .export-options button {
+  background: var(--os-soft);
+  border-color: var(--os-line);
+  color: var(--os-ink);
+}
+.editor-app .export-options span:not(.export-icon) {
+  color: var(--os-muted);
+}
+.editor-app .export-options b {
+  color: var(--os-accent);
+}
+.editor-app .connection-card {
+  background: var(--os-accent-soft);
+  border-color: var(--os-accent-border);
+  color: var(--os-muted);
+}
+.editor-app .app-toast {
+  background: var(--os-surface);
+  border-color: var(--os-line-hi);
+  color: var(--os-ink);
+  box-shadow: var(--os-shadow);
+  bottom: 201px;
+  font-size: 12px;
+}
+.editor-app .app-toast.error {
+  background: var(--os-surface);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+.projects-app .projects-header {
+  height: 60px;
+  background: transparent;
+  border-color: var(--os-line-hi);
+  padding: 0 max(24px, calc((100vw - 1320px) / 2));
+}
+.projects-app .projects-header > div {
+  gap: 14px;
+}
+.projects-app .private-label {
+  color: var(--os-muted);
+}
+.projects-app .private-label > span {
+  background: var(--os-accent);
+}
+.projects-app .projects-main {
+  max-width: 1320px;
+  padding: 42px 24px 58px;
+}
+.projects-app .projects-title {
+  margin-bottom: 31px;
+}
+.projects-app .projects-title h1 {
+  font-size: 32px;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -1px;
+  margin: 10px 0;
+}
+.projects-app .projects-title h1 span {
+  color: var(--os-accent);
+}
+.projects-app .projects-title p {
+  font-size: 12px;
+  color: var(--os-muted);
+}
+.projects-app .eyebrow {
+  color: var(--os-meta);
+  font-size: 9px;
+  letter-spacing: 1.4px;
+}
+.projects-app .projects-title > .primary {
+  padding: 10px 15px;
+  min-height: 34px;
+  font-size: 12px;
+  box-shadow: 0 4px 14px -4px var(--ui-accent-border);
+}
+.projects-app .search-field {
+  background: var(--os-soft);
+  border-color: var(--os-line);
+  border-radius: 8px;
+}
+.projects-app .search-field input {
+  background: transparent;
+  border: 0;
+}
+.projects-app #project-count {
+  color: var(--os-meta);
+}
+.projects-app .project-card {
+  background: var(--os-surface);
+  border-color: var(--os-line);
+  border-radius: 11px;
+  box-shadow: var(--os-shadow);
+}
+.projects-app .project-card:hover {
+  border-color: var(--os-accent-border);
+  box-shadow: var(--os-canvas-shadow);
+  transform: translateY(-2px);
+}
+.projects-app .project-description {
+  padding: 16px 17px 18px;
+}
+.projects-app .project-description h2 {
+  font-size: 13px;
+  font-weight: 500;
+}
+.projects-app .project-meta {
+  color: var(--os-meta);
+}
+.projects-app .project-open {
+  color: var(--os-accent);
+}
+.projects-app .projects-footer {
+  border-color: var(--os-line);
+  color: var(--os-meta);
+  padding: 18px max(24px, calc((100vw - 1320px) / 2));
+  font-size: 10px;
+}
+.projects-app .projects-empty p {
+  color: var(--os-muted);
+}
+@media (min-width: 1800px) {
+  .editor-app {
+    --chat-width: 300px;
+    --properties-width: 330px;
+  }
+  .editor-app .project-name {
+    width: 250px;
+    max-width: 250px;
+    flex-basis: 250px;
+  }
+  .editor-app .canvas-space {
+    padding: 20px 28px 14px;
+  }
+}
+@media (max-width: 1250px) {
+  .editor-app {
+    --chat-width: 250px;
+    --properties-width: 285px;
+  }
+  .editor-app .brand > span:last-child {
+    display: none;
+  }
+  .editor-app .project-name {
+    width: 160px;
+    max-width: 160px;
+    flex-basis: 160px;
+  }
+  .editor-app .mode-switch :is(a, span) {
+    padding: 4px 12px;
+    font-size: 11px;
+  }
+  .editor-app .canvas-space {
+    padding: 16px 18px;
+  }
+}
+@media (max-width: 950px) {
+  .editor-app {
+    --chat-width: 0px;
+    --properties-width: 275px;
+  }
+  .editor-app .mode-switch {
+    position: static;
+    transform: none;
+    margin-left: auto;
+  }
+  .editor-app .mode-switch :is(a, span) {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  .editor-app .header-actions {
+    margin-left: 0;
+  }
+  .editor-app .project-name {
+    width: 135px;
+    max-width: 135px;
+    flex-basis: 135px;
+  }
+  .editor-app .chat-panel.mobile-open {
+    top: 54px;
+    bottom: 184px;
+    background: var(--os-bg);
+  }
+  .editor-app .properties-panel {
+    margin-left: 7px;
+    margin-right: 45px;
+  }
+}
+@media (max-width: 700px) {
+  .editor-app {
+    grid-template-rows: 50px minmax(0, 1fr) 164px;
+    --properties-width: 0px;
+  }
+  .editor-app .app-header {
+    height: 50px;
+    padding: 0 9px;
+    gap: 7px;
+  }
+  .editor-app .mode-switch {
+    display: none;
+  }
+  .editor-app .project-name {
+    flex: 1;
+    width: auto;
+    max-width: calc(100vw - 262px);
+    font-size: 11px;
+  }
+  .editor-app .header-actions {
+    margin-left: auto;
+    gap: 3px;
+  }
+  .editor-app .header-actions #present-link {
+    display: flex;
+  }
+  .editor-app .header-actions .quiet,
+  .editor-app .header-actions .icon-button {
+    padding: 5px 6px;
+    min-width: 26px;
+    min-height: 27px;
+  }
+  .editor-app .header-actions .primary {
+    padding: 5px 8px;
+    min-height: 28px;
+    height: 28px;
+  }
+  .editor-app .save-status {
+    display: none;
+  }
+  .editor-app .canvas-space {
+    padding: 22px 16px 16px;
+  }
+  .editor-app .properties-panel.mobile-open {
+    position: fixed;
+    top: 62px;
+    right: 45px;
+    bottom: 176px;
+    width: 275px;
+    margin: 0;
+    max-width: calc(100vw - 65px);
+    background: var(--os-soft);
+  }
+  .editor-app .chat-panel.mobile-open {
+    top: 50px;
+    bottom: 164px;
+  }
+  .editor-app .filmstrip {
+    height: 164px;
+    padding: 0 10px;
+  }
+  .editor-app .filmstrip > .canvas-tools {
+    height: 32px;
+    gap: 5px;
+  }
+  .editor-app .canvas-tools .tool-button {
+    padding: 5px 7px;
+  }
+  .editor-app .canvas-tools .tool-button span {
+    display: none;
+  }
+  .editor-app .filmstrip-heading {
+    height: 29px;
+  }
+  .editor-app .slide-list {
+    height: 99px;
+    padding: 4px 0 8px;
+    gap: 10px;
+  }
+  .editor-app .slide-thumbnail {
+    width: 139px;
+    border-radius: 7px;
+  }
+  .editor-app .thumb-number {
+    bottom: 5px;
+  }
+  .editor-app .app-toast {
+    bottom: 179px;
+  }
+  .projects-app .projects-header {
+    height: 56px;
+    padding: 0 18px;
+  }
+  .projects-app .projects-main {
+    padding: 32px 18px 42px;
+  }
+  .projects-app .projects-title h1 {
+    font-size: 29px;
+  }
+  .projects-app .projects-footer {
+    padding: 18px;
+  }
+}

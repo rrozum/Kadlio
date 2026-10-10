@@ -1,0 +1,40 @@
+services:
+  presentations:
+    build: .
+    image: kadlio:local
+    init: true
+    restart: unless-stopped
+    # Для локального запуска порт доступен только на самом компьютере.
+    ports:
+      - "127.0.0.1:${PORT:-3210}:3210"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3210
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://127.0.0.1:3210}
+      PROJECTS_DATA_DIR: /var/lib/rozum-presentations
+      AUTH_DB: /var/lib/rozum-presentations/auth.sqlite
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      PLAYWRIGHT_BROWSERS_PATH: /opt/playwright
+    volumes:
+      - presentation-data:/var/lib/rozum-presentations
+    read_only: true
+    tmpfs:
+      - /tmp:rw,exec,nosuid,size=512m,mode=1777
+    shm_size: 256mb
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+      # bwrap сохраняет изоляцию конвертера Office внутри контейнера.
+      - seccomp=./docker/seccomp.json
+    healthcheck:
+      test: ["CMD", "node", "--input-type=module", "-e", "const r=await fetch('http://127.0.0.1:3210/login');if(!r.ok)process.exit(1)"]
+      interval: 20s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+volumes:
+  presentation-data:

@@ -1,0 +1,19 @@
+{
+  "package": "lucide-static",
+  "version": "1.52.0",
+  "upstream": "https://github.com/lucide-icons/lucide",
+  "tarball": "https://registry.npmjs.org/lucide-static/-/lucide-static-1.52.0.tgz",
+  "integrity": "sha512-0zZYihAze4ZmUCcyNa9OkWYqn/Y5f9AdTh02AZIxMtP5ravcTTfoSIAnUPBH6ZvKxt+ZW28JB0ldzLRyD82fcw==",
+  "tarballSHA256": "4d2aa079171e4eba4c704844b8b0c9edb6e4cfb2fb8bd86f7b14353994f04a87",
+  "sources": [
+    {
+      "file": "icon-nodes.json",
+      "sha256": "5da1db6d48a8d3d7269049288339eaa12cf03d816203006f7e1c1db9171aa27b"
+    },
+    {
+      "file": "tags.json",
+      "sha256": "9909b8fb10ed0600eaade0669b19d659a634f1fdb77e44cc50f49f7905193706"
+    }
+  ],
+  "changes": "JSON data exported as ES module; geometry and tags unchanged."
+}

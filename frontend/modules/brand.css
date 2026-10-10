@@ -1,0 +1,147 @@
+.kadlio-mark {
+  display: block;
+  width: 32px;
+  height: 32px;
+  flex: none;
+}
+.editor-app .kadlio-mark {
+  width: 28px;
+  height: 28px;
+}
+.login-app .wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+}
+.login-app .wordmark .kadlio-mark {
+  width: 48px;
+  height: 48px;
+}
+.login-app .wordmark .kadlio-word {
+  color: inherit;
+  font-size: 32px;
+  letter-spacing: -1px;
+  font-weight: 700;
+}
+
+:root {
+  --ui-accent: #10b981;
+  --ui-accent-hover: #34d399;
+  --ui-accent-ink: #04221a;
+  --ui-accent-soft: #10b98124;
+  --ui-accent-border: #10b98142;
+}
+:root[data-ui-theme='light'] {
+  --ui-accent: #7c3aed;
+  --ui-accent-hover: #6d28d9;
+  --ui-accent-ink: #ffffff;
+  --ui-accent-soft: #7c3aed1a;
+  --ui-accent-border: #7c3aed42;
+}
+.kadlio-mark {
+  color: var(--ui-accent);
+}
+.projects-app .projects-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  height: 60px;
+  min-height: 60px;
+  flex-shrink: 0;
+  gap: 16px;
+}
+.projects-header .brand {
+  justify-self: start;
+}
+.projects-header .library-nav {
+  justify-self: center;
+}
+.projects-header .library-actions {
+  justify-self: end;
+}
+@media (max-width: 700px) {
+  .projects-app .projects-header {
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .projects-header .brand {
+    font-size: 13px;
+    gap: 6px;
+  }
+  .projects-header .kadlio-mark {
+    width: 24px;
+    height: 24px;
+  }
+  .projects-header .library-actions {
+    gap: 4px;
+  }
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 300ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+.toolbar .viewer-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+.toolbar .viewer-brand .kadlio-mark {
+  width: 22px;
+  height: 22px;
+}
+/* Снимок темы не должен перехватывать клики по живому редактору. */
+::view-transition {
+  pointer-events: none;
+}
+
+/* Новая страница проявляется без снимков старого интерфейса и без сдвига холста. */
+body[data-route-enter] > main,
+body[data-route-enter] > .workspace {
+  animation: kadlio-route-enter 180ms ease-out both;
+}
+@keyframes kadlio-route-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body[data-route-enter] > main,
+  body[data-route-enter] > .workspace {
+    animation: none;
+  }
+}
+
+.preview-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  background: var(--os-soft);
+  color: var(--os-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.chat-loading {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  color: var(--os-muted);
+  font-size: 11px;
+}

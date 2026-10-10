@@ -1,0 +1,156 @@
+.editor-app .filmstrip {
+  position: relative;
+}
+.editor-app .slide-list {
+  position: relative;
+  align-items: flex-start;
+}
+.slide-thumbnail,
+.transition-card {
+  touch-action: pan-y;
+  user-select: none;
+  cursor: grab;
+}
+.editor-app .transition-gap,
+.editor-app .transition-card {
+  flex-shrink: 0;
+  align-self: center;
+  background: var(--os-soft);
+  border: 1px solid var(--os-line-hi);
+  color: var(--os-muted);
+  padding: 0;
+  box-sizing: border-box;
+}
+.editor-app .transition-gap {
+  width: 22px;
+  min-width: 22px;
+  height: 36px;
+  border-radius: 7px;
+  font-size: 16px;
+}
+.editor-app .transition-gap:hover {
+  color: var(--os-accent);
+  border-color: var(--os-accent);
+}
+.editor-app .transition-card {
+  width: 82px;
+  min-width: 82px;
+  height: 82px;
+  border-radius: 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.transition-symbol {
+  font-size: 20px;
+  color: var(--os-accent);
+}
+.transition-name {
+  font-size: 9px;
+  max-width: 76px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.transition-duration {
+  font-size: 9px;
+  color: var(--os-meta);
+}
+.editor-app .timeline-dragging {
+  position: relative;
+  z-index: 3;
+  opacity: 0.75;
+  cursor: grabbing;
+  box-shadow: var(--os-shadow);
+  pointer-events: none;
+}
+.timeline-drag-active {
+  cursor: grabbing;
+}
+.timeline-drop-marker {
+  position: absolute;
+  top: 3px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 4px;
+  background: var(--os-accent);
+  pointer-events: none;
+  z-index: 4;
+}
+.editor-app .timeline-drop-target {
+  border-color: var(--os-accent);
+  box-shadow: 0 0 0 3px var(--os-accent-soft);
+  background: var(--os-accent-soft);
+}
+.timeline-saving {
+  opacity: 0.65;
+  cursor: progress;
+}
+.timeline-status {
+  position: absolute;
+  right: 190px;
+  bottom: 151px;
+  font-size: 10px;
+  color: var(--os-meta);
+  pointer-events: none;
+}
+.effects-placement {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+  margin: 14px 0;
+}
+.effects-placement label {
+  flex: 1;
+  font-size: 11px;
+  color: var(--os-muted);
+}
+.effects-placement select {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  font-size: 11px;
+}
+.effects-placement button {
+  font-size: 11px;
+}
+.effects-placement .danger {
+  margin-left: auto;
+}
+@media (max-width: 700px) {
+  .editor-app .transition-card {
+    width: 66px;
+    min-width: 66px;
+    height: 68px;
+  }
+  .transition-name {
+    font-size: 8px;
+    max-width: 60px;
+  }
+  .timeline-status {
+    bottom: 134px;
+    right: 190px;
+    font-size: 9px;
+  }
+  .effects-placement {
+    flex-wrap: wrap;
+  }
+  .effects-placement label {
+    flex-basis: 100%;
+  }
+}
+
+.effects-gap-label {
+  display: block;
+  font-size: 11px;
+  color: var(--os-muted);
+  margin: 8px 0;
+}
+.effects-gap-label select {
+  margin-top: 6px;
+  display: block;
+  width: 100%;
+  font-size: 11px;
+}

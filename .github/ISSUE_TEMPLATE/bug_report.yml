@@ -1,0 +1,22 @@
+name: Сообщение об ошибке
+description: Воспроизводимая ошибка редактора, интеграции или экспорта.
+body:
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Ожидаемое и фактическое поведение
+      description: Укажите версию приложения и браузер. Используйте нейтральные примеры, исключите личные презентации и учётные данные.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Шаги воспроизведения
+      description: Приложите небольшой публичный пример, если он помогает воспроизвести ошибку.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Подтверждение ошибки
+      description: Скриншоты или сообщения об ошибках без приватных данных. Не включайте ключи провайдеров, cookies сессии, MCP-токены или приватные ссылки на презентации.

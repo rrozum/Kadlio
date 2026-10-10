@@ -1,0 +1,80 @@
+/* Компактное встраивание редактора в тур; слайд сохраняет собственную тему. */
+.theme-tour [data-theme-exit],
+.theme-tour #theme-copy,
+.theme-tour .header-divider {
+  display: none !important;
+}
+.theme-tour {
+  grid-template-rows: 46px minmax(0, 1fr) !important;
+}
+.theme-tour .app-header {
+  height: 46px;
+  padding: 0 12px;
+  gap: 8px;
+}
+.theme-tour .theme-name {
+  width: 240px;
+  max-width: 36vw;
+}
+.theme-tour .chat-panel {
+  margin: 8px 0 8px 8px;
+}
+.theme-tour .properties-panel {
+  margin: 8px 8px 8px 0;
+}
+.theme-tour .canvas-space {
+  padding: 16px;
+}
+.theme-tour .canvas-footer {
+  height: 30px;
+  font-size: 10px;
+}
+@media (min-width: 951px) {
+  .theme-tour {
+    --chat-width: 260px;
+  }
+  .theme-tour .workspace {
+    grid-template-columns: var(--chat-width) minmax(0, 1fr) 260px;
+  }
+  .theme-tour.theme-chat-hidden .workspace {
+    grid-template-columns: minmax(0, 1fr) 260px;
+  }
+  .theme-tour .canvas-tools {
+    padding: 0 12px;
+  }
+  .theme-tour .tool-button {
+    padding: 6px;
+  }
+  .theme-tour .tool-button span {
+    display: none;
+  }
+}
+@media (max-width: 950px) {
+  .theme-tour .chat-panel.mobile-open {
+    top: 46px;
+    bottom: 8px;
+  }
+  .theme-tour .theme-save-status {
+    display: inline;
+  }
+}
+@media (max-width: 700px) {
+  .theme-tour .theme-name {
+    max-width: calc(100vw - 195px);
+    width: 180px;
+  }
+  .theme-tour .theme-save-status {
+    display: none;
+  }
+  .theme-tour .properties-panel.mobile-open {
+    top: 54px;
+    bottom: 8px;
+  }
+  .theme-tour .canvas-space {
+    padding: 12px;
+  }
+  .theme-tour .canvas-footer > span {
+    max-width: 65%;
+    line-height: 1.4;
+  }
+}
