@@ -11,6 +11,11 @@ await app.library.updateSlide(project.id,'slide-01',{version:0,body:'<div id="ta
 const browser=await chromium.launch({headless:true,...(process.env.PRESENTATION_BROWSER_PATH?{executablePath:process.env.PRESENTATION_BROWSER_PATH}:{})}),page=await browser.newPage({viewport:{width:1700,height:1000}}),errors=[];page.on('pageerror',error=>errors.push(error.message));const frame=()=>page.frameLocator('#slide-canvas'),stored=()=>app.library.get(project.id),save=()=>page.waitForFunction(()=>document.getElementById('save-status').textContent==='Сохранено');
 async function code(id,text){await page.locator('#'+id).fill(text);}
 async function assertPaintedPreview(){
+  // Готовый DOM не означает готовый видеокадр; проверяем реальные пиксели после декодирования.
+  await page.frameLocator('#authoring-preview .slide-runtime-frame').locator('video').evaluate(video=>new Promise((resolve,reject)=>{
+    const timeout=setTimeout(()=>reject(new Error('Видео не представило кадр за 5 секунд')),5000);
+    video.requestVideoFrameCallback(()=>{clearTimeout(timeout);resolve();});
+  }));
   const target=await page.frameLocator('#authoring-preview .slide-runtime-frame').locator('#target').evaluate(element=>element.getBoundingClientRect().toJSON()),video=await page.frameLocator('#authoring-preview .slide-runtime-frame').locator('video').evaluate(element=>element.getBoundingClientRect().toJSON());
   const pose=await page.locator('#authoring-preview').evaluate(element=>{const frame=element.querySelector('iframe');return {preview:element.getBoundingClientRect().toJSON(),frame:frame.getBoundingClientRect().toJSON(),scale:new DOMMatrixReadOnly(getComputedStyle(frame).transform).a,visibility:getComputedStyle(frame).visibility};});
   assert.equal(pose.visibility,'visible');assert(pose.scale>0);assert(Math.abs(pose.frame.width-1280*pose.scale)<1);assert(Math.abs(pose.frame.height-720*pose.scale)<1);
