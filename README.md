@@ -14,6 +14,8 @@
 [![Запуск в Docker](https://img.shields.io/badge/запуск-Docker-7c3aed)](#как-запустить)
 [![Telegram автора](https://img.shields.io/badge/Telegram-Rozum_in_the_Loop-26a5e4)](https://t.me/rozum_in_the_loop)
 
+**[Попробовать онлайн: kadlio.pro](https://kadlio.pro)**
+
 [Быстрый запуск](#как-запустить) · [Возможности](#что-внутри) · [Документация](docs/README.md) · [Участие в разработке](CONTRIBUTING.md)
 
 </div>
