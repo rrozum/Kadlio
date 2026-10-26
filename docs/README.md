@@ -20,7 +20,7 @@
 - [Темы и эффекты](themes-and-effects.md), [чат темы](theme-chat.md).
 - [Композиции](presets.md), [дизайнерские элементы](elements.md).
 - [Диктовка и вывод агента](dictation.md).
-- [Оформление по образцу](reference-import.md), [импорт PPTX](pptx-import.md).
+- [Оформление по образцу](reference-import.md), [импорт PPTX](pptx-import.md), [редактируемый экспорт PPTX](pptx-export.md).
 - [Видео, JS и runtime](presentation-runtime.md).
 - [Публичный просмотр и гостевые отзывы](sharing.md).
 - [Работа просмотрщика](viewer-performance.md).

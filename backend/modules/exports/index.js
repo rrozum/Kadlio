@@ -8,6 +8,9 @@ import JSZip from 'jszip';
 import { exportHTML } from './html.js';
 import { pptxTransitionXML } from '../../../shared/addons/motion/runtime.js';
 import { normalizeTimeline, incomingTransition } from '../../../shared/presentation/timeline.js';
+import { finalizePptx } from './pptx-package.js';
+import { resolvePptxFonts } from './pptx-fonts.js';
+import { materializePseudoText, extractSlide } from './pptx-dom.js';
 
 async function launchBrowser() {
   if (process.env.PRESENTATION_BROWSER_PATH)
@@ -129,7 +132,8 @@ export async function exportPresentation({ root, project, format, assetRoot }) {
     if (format === 'pdf') return await page.pdf({ printBackground: true, preferCSSPageSize: true });
     await page.addStyleTag({
       content:
-        '.deck-area{display:block!important;padding:0!important;height:auto!important}.deck-stage{transform:none!important;box-shadow:none!important}.stage-shell{width:1280px!important;height:720px!important}.toolbar,.progress,.notes-drawer,.annotation-panel,.annotation-layer,.annotation-hint,.toast,.modal{display:none!important}.export-background>*{visibility:hidden!important}',
+        '.deck-area{display:block!important;padding:0!important;height:auto!important}.deck-stage{transform:none!important;box-shadow:none!important}.stage-shell{width:1280px!important;height:720px!important}.toolbar,.progress,.notes-drawer,.annotation-panel,.annotation-layer,.annotation-hint,.toast,.modal{display:none!important}.export-background *{visibility:hidden!important}' +
+        'html.export-media,html.export-media :not([data-export-current-media],[data-export-current-media] *){visibility:hidden!important}html.export-media,html.export-media body{background:transparent!important}html.export-media [data-export-current-media]{visibility:visible!important}',
     });
     const pptx = new PptxGenJS();
     pptx.defineLayout({ name: 'HTML', width: 1280 / 96, height: 720 / 96 });
@@ -139,15 +143,27 @@ export async function exportPresentation({ root, project, format, assetRoot }) {
     pptx.title = project.title;
     pptx.lang = 'ru-RU';
     pptx.company = '';
-    pptx.theme = { headFontFace: 'Arial', bodyFontFace: 'Arial', lang: 'ru-RU' };
-    for (const source of project.slides) {
+    pptx.theme = {
+      headFontFace: 'Arial',
+      bodyFontFace: 'Arial',
+      lang: 'ru-RU',
+    };
+    const models = [],
+      fonts = new Map(),
+      cdp = await context.newCDPSession(page);
+    await cdp.send('DOM.enable');
+    await cdp.send('CSS.enable');
+    for (const [index, source] of project.slides.entries()) {
       await page.evaluate((id) => {
         document
           .querySelectorAll('#deck-stage > .slide')
           .forEach((s) => s.classList.toggle('active', s.id === id));
       }, source.id);
+      await page.locator('#deck-stage > #' + source.id).evaluate(materializePseudoText);
       const element = page.locator('#deck-stage > #' + source.id),
         model = await element.evaluate(extractSlide);
+      await resolvePptxFonts(cdp, source.id, model, fonts);
+      models.push(model);
       await element.evaluate((el) => el.classList.add('export-background'));
       const background = await element.screenshot({ type: 'png' });
       await element.evaluate((el) => el.classList.remove('export-background'));
@@ -185,16 +201,17 @@ export async function exportPresentation({ root, project, format, assetRoot }) {
                   transparency: (1 - cssColor(sides[0].color).alpha) * 100,
                 }
               : { transparency: 100 },
-            rectRadius: box.radius / 96,
           };
-          slide.addShape(
-            box.radius >= Math.min(box.w, box.h) / 2
-              ? pptx.ShapeType.ellipse
-              : box.radius > 0
-                ? pptx.ShapeType.roundRect
-                : pptx.ShapeType.rect,
-            options,
-          );
+          const shape = box.ellipse
+            ? pptx.ShapeType.ellipse
+            : box.radius > 0
+              ? pptx.ShapeType.roundRect
+              : pptx.ShapeType.rect;
+          // CSS 50% дает эллипс, фиксированный радиус в половину высоты — плашку.
+          if (shape === pptx.ShapeType.roundRect)
+            options.rectRadius = Math.min(box.radius, Math.min(box.w, box.h) / 2) / 96;
+          options.objectName = 'HTML box ' + model.boxes.indexOf(box);
+          slide.addShape(shape, options);
         }
         if (!uniform)
           for (const border of sides) {
@@ -220,9 +237,25 @@ export async function exportPresentation({ root, project, format, assetRoot }) {
           }
       }
       for (const image of model.images) {
-        const picture = await element
-          .locator('[data-export-image="' + image.index + '"]')
-          .screenshot({ type: 'png' });
+        const target = element.locator('[data-export-image="' + image.index + '"]');
+        // Locator снимает прямоугольник экрана, включая соседей поверх SVG.
+        // Изолируем только paint: геометрия, исходный CSS и маркеры не меняются.
+        await target.evaluate((el) => {
+          el.dataset.exportCurrentMedia = '';
+          document.documentElement.classList.add('export-media');
+        });
+        let picture;
+        try {
+          picture = await target.screenshot({
+            type: 'png',
+            omitBackground: true,
+          });
+        } finally {
+          await target.evaluate((el) => {
+            delete el.dataset.exportCurrentMedia;
+            document.documentElement.classList.remove('export-media');
+          });
+        }
         slide.addImage({
           data: 'image/png;base64,' + picture.toString('base64'),
           x: image.x / 96,
@@ -231,18 +264,21 @@ export async function exportPresentation({ root, project, format, assetRoot }) {
           h: image.h / 96,
         });
       }
-      for (const line of model.lines) {
-        const runs = line.parts.map((part) => ({
-          text: part.text,
-          options: {
-            fontFace: part.font,
-            fontSize: part.fontSize * 0.75,
-            bold: part.bold,
-            italic: part.italic,
-            color: cssColor(part.color).hex,
-            charSpacing: part.spacing * 0.75,
+      for (const line of model.lines.flatMap((line) => line.parts)) {
+        const runs = [
+          {
+            text: line.text,
+            options: {
+              fontFace: line.font,
+              fontSize: line.fontSize * 0.75,
+              bold: line.bold,
+              italic: line.italic,
+              color: cssColor(line.color).hex,
+              transparency: (1 - cssColor(line.color).alpha * line.opacity) * 100,
+              charSpacing: line.spacing * 0.75,
+            },
           },
-        }));
+        ];
         slide.addText(runs, {
           x: line.x / 96,
           y: line.y / 96,
@@ -257,11 +293,35 @@ export async function exportPresentation({ root, project, format, assetRoot }) {
           wrap: false,
           shapeName: 'HTML text ' + source.id,
         });
+        // Отдельные линии сохраняют CSS-цвет и толщину, которых нет у strike PptxGenJS.
+        for (const decoration of line.decorations) {
+          const color = cssColor(decoration.color);
+          for (const kind of decoration.line.split(' ')) {
+            if (!['underline', 'line-through', 'overline'].includes(kind)) continue;
+            slide.addShape(pptx.ShapeType.line, {
+              x: line.x / 96,
+              y:
+                (line.y +
+                  line.h * (kind === 'underline' ? 0.92 : kind === 'overline' ? 0.08 : 0.5)) /
+                96,
+              w: line.w / 96,
+              h: 0,
+              line: {
+                color: color.hex,
+                width: decoration.thickness * 0.75,
+                transparency: (1 - color.alpha * line.opacity) * 100,
+              },
+            });
+          }
+        }
       }
       slide.addNotes(source.notes);
     }
-    const result = await pptx.write({ outputType: 'nodebuffer', compression: true });
-    return applyTimelineTransitions(result, project);
+    const result = await pptx.write({
+      outputType: 'nodebuffer',
+      compression: true,
+    });
+    return applyTimelineTransitions(await finalizePptx(result, project, models, fonts), project);
   } finally {
     await browser.close();
   }
@@ -320,113 +380,4 @@ function cssColor(value) {
       .toUpperCase(),
     alpha: numbers.length > 3 ? numbers[3] : 1,
   };
-}
-// Переносы строк и позиции определяет браузер. В PPTX передаём редактируемые
-// текст, карточки и линии; фоновый декор и иллюстрации сохраняем изображениями.
-function extractSlide(slide) {
-  const origin = slide.getBoundingClientRect(),
-    boxes = [],
-    images = [],
-    segments = [],
-    blockIds = new Map();
-  const rect = (r) => ({ x: r.x - origin.x, y: r.y - origin.y, w: r.width, h: r.height });
-  for (const el of slide.querySelectorAll('*')) {
-    const style = getComputedStyle(el),
-      r = el.getBoundingClientRect();
-    if (!r.width || !r.height) continue;
-    if (el.matches('img,svg,canvas,video')) {
-      el.dataset.exportImage = String(images.length);
-      images.push({ ...rect(r), index: images.length });
-      continue;
-    }
-    const borders = ['top', 'right', 'bottom', 'left'].map((side) => ({
-      side,
-      width: parseFloat(style.getPropertyValue('border-' + side + '-width')),
-      color: style.getPropertyValue('border-' + side + '-color'),
-      style: style.getPropertyValue('border-' + side + '-style'),
-    }));
-    let opacity = 1;
-    for (let parent = el; parent !== slide; parent = parent.parentElement)
-      opacity *= Number(getComputedStyle(parent).opacity);
-    if (
-      style.backgroundColor !== 'rgba(0, 0, 0, 0)' ||
-      style.backgroundImage !== 'none' ||
-      borders.some((b) => b.width > 0 && b.style !== 'none')
-    )
-      boxes.push({
-        ...rect(r),
-        background: style.backgroundColor,
-        gradient: style.backgroundImage,
-        radius: parseFloat(style.borderTopLeftRadius) || 0,
-        borders,
-        opacity,
-      });
-  }
-  const walker = document.createTreeWalker(slide, NodeFilter.SHOW_TEXT);
-  let node;
-  while ((node = walker.nextNode())) {
-    const parent = node.parentElement;
-    if (parent.closest('svg,script,style')) continue;
-    const style = getComputedStyle(parent);
-    if (style.visibility === 'hidden' || style.display === 'none') continue;
-    let block = parent;
-    while (block.parentElement !== slide && getComputedStyle(block).display === 'inline')
-      block = block.parentElement;
-    if (!blockIds.has(block)) blockIds.set(block, blockIds.size);
-    const font = style.fontFamily.split(',')[0].replace(/['"]/g, ''),
-      fontSize = parseFloat(style.fontSize),
-      bold = Number(style.fontWeight) >= 600,
-      italic = style.fontStyle === 'italic',
-      spacing = parseFloat(style.letterSpacing) || 0;
-    let current = null;
-    for (let i = 0; i < node.textContent.length; i++) {
-      const range = document.createRange();
-      range.setStart(node, i);
-      range.setEnd(node, i + 1);
-      const r = range.getBoundingClientRect();
-      if (r.width < 0.01 || r.height < 0.01) continue;
-      let char = node.textContent[i];
-      if (style.textTransform === 'uppercase') char = char.toUpperCase();
-      const position = rect(r);
-      if (!current || Math.abs(current.y - position.y) > 1) {
-        current = {
-          ...position,
-          text: char,
-          block: blockIds.get(block),
-          font,
-          fontSize,
-          bold,
-          italic,
-          spacing,
-          color: style.color,
-        };
-        segments.push(current);
-      } else {
-        current.text += char;
-        current.w = position.x + position.w - current.x;
-      }
-    }
-  }
-  const lines = [];
-  for (const segment of segments) {
-    if (!segment.text.trim()) continue;
-    let line = lines.find((l) => l.block === segment.block && Math.abs(l.y - segment.y) < 1);
-    if (!line) {
-      line = {
-        x: segment.x,
-        y: segment.y,
-        w: segment.w,
-        h: segment.h,
-        block: segment.block,
-        parts: [],
-      };
-      lines.push(line);
-    }
-    line.x = Math.min(line.x, segment.x);
-    line.w = Math.max(line.w, segment.x + segment.w - line.x);
-    line.h = Math.max(line.h, segment.h);
-    line.parts.push(segment);
-  }
-  lines.forEach((line) => line.parts.sort((a, b) => a.x - b.x));
-  return { boxes, images, lines };
 }

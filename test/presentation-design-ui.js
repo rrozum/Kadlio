@@ -72,7 +72,7 @@ try{
   await page.locator('#export-button').click();
   const waitPDF=page.waitForEvent('download');await page.locator('[data-export="pdf"]').click();const pdf=await waitPDF;assert.equal((await PDFDocument.load(await readFile(await pdf.path()))).getPageCount(),2);
   const waitPPTX=page.waitForEvent('download');await page.locator('[data-export="pptx"]').click();const pptx=await waitPPTX,zip=await JSZip.loadAsync(await readFile(await pptx.path()));
-  const nativeText=[...(await zip.file('ppt/slides/slide2.xml').async('string')).matchAll(/<a:t>(.*?)<\/a:t>/gs)].map(match=>match[1]).join(' ');assert.match(nativeText,/Пример\s+остаётся\s+HTML/);await page.locator('[data-close="export-dialog"]').click();
+  const nativeText=[...(await zip.file('ppt/slides/slide2.xml').async('string')).matchAll(/<a:t(?:\s[^>]*)?>(.*?)<\/a:t>/gs)].map(match=>match[1]).join(' ');assert.match(nativeText,/Пример\s+остаётся\s+HTML/);await page.locator('[data-close="export-dialog"]').click();
   await page.locator('#design-tab').click();await page.locator('[data-theme-id="warm"]').click();
   const current=await application.library.get(fixture.id);await application.library.updateDesign(fixture.id,{design:createPresentationDesign('dark'),version:current.version});
   await page.locator('#design-apply').click();await page.getByText(/Тему презентации изменили в другом окне/).waitFor();assert.equal((await application.library.get(fixture.id)).design.themeId,'dark');assert.equal(await page.locator('[data-theme-id="warm"]').getAttribute('aria-pressed'),'true');
